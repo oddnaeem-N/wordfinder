@@ -1,49 +1,57 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>শব্দ কুইজ</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      font-family: "Noto Sans Bengali", sans-serif;
-      background: #f8f9fa;
-    }
-    .quiz-card {
-      max-width: 500px;
-      margin: 30px auto;
-      padding: 25px 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .word {
-      font-size: 40px;
-      font-weight: bold;
-      margin-bottom: 25px;
-    }
-    .result {
-      margin-top: 15px;
-      font-size: 20px;
-      font-weight: 600;
-    }
-    .btn-group-custom {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-    .review-card {
-      max-width: 500px;
-      margin: 20px auto;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      background: #fff3cd;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>শব্দ কুইজ</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body {
+  font-family: "Noto Sans Bengali", sans-serif;
+  background: #f8f9fa;
+}
+.quiz-card {
+  max-width: 500px;
+  margin: 30px auto;
+  padding: 25px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.word {
+  font-size: 40px;
+  font-weight: bold;
+  margin-bottom: 25px;
+}
+.result {
+  margin-top: 15px;
+  font-size: 20px;
+  font-weight: 600;
+}
+.btn-group-singleline {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.btn-group-singleline .btn {
+  flex: 1 1 calc(20% - 8px);
+  min-width: 60px;
+}
+.toast-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1055;
+  max-width: 90%;
+}
+.toast-body {
+  text-align: center;
+}
+</style>
 </head>
 <body>
+
 <div class="container">
 
   <!-- Quiz Card -->
@@ -51,17 +59,16 @@
     <div class="card-body">
       <div id="word" class="word">লোড হচ্ছে...</div>
 
-      <div class="btn-group-custom">
-        <button class="btn btn-primary flex-fill" onclick="checkAnswer('তৎসম')">তৎসম</button>
-        <button class="btn btn-success flex-fill" onclick="checkAnswer('তদ্ভব')">তদ্ভব</button>
-        <button class="btn btn-warning flex-fill" onclick="checkAnswer('অর্ধ-তৎসম')">অর্ধ-তৎসম</button>
-        <button class="btn btn-info flex-fill" onclick="checkAnswer('দেশি')">দেশি</button>
-        <button class="btn btn-danger flex-fill" onclick="checkAnswer('বিদেশি')">বিদেশি</button>
+      <div class="btn-group-singleline mb-3">
+        <button class="btn btn-primary" onclick="checkAnswer('তৎসম')">তৎসম</button>
+        <button class="btn btn-success" onclick="checkAnswer('তদ্ভব')">তদ্ভব</button>
+        <button class="btn btn-warning" onclick="checkAnswer('অর্ধ-তৎসম')">অর্ধ-তৎসম</button>
+        <button class="btn btn-info" onclick="checkAnswer('দেশি')">দেশি</button>
+        <button class="btn btn-danger" onclick="checkAnswer('বিদেশি')">বিদেশি</button>
       </div>
 
       <div class="result" id="result"></div>
       <button class="btn btn-secondary mt-3" onclick="nextWord()">পরের শব্দ</button>
-      <button class="btn btn-dark mt-3" onclick="showReview()">রিভিউ</button>
     </div>
   </div>
 
@@ -73,13 +80,16 @@
     </div>
   </div>
 
-  <!-- Review Section -->
-  <div id="reviewSection" class="review-card d-none">
-    <h5>📝 রিভিউ</h5>
-    <p id="reviewSummary"></p>
-    <ul id="wrongList"></ul>
-  </div>
+</div>
 
+<!-- Centered Toast -->
+<div class="toast-container">
+  <div id="finalToast" class="toast text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-body" id="toastBody">
+      <!-- content dynamically added -->
+    </div>
+    <button type="button" class="btn-close btn-close-white m-auto mt-2" data-bs-dismiss="toast" aria-label="Close"></button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -94,7 +104,7 @@ const words = [
   { text: "মনুষ্য", type: "তৎসম" },
   { text: "হাত", type: "তদ্ভব" },
   { text: "চামার", type: "তদ্ভব" },
-  { text: "জ্যোছনা", type: "অর্ধ-তৎসম" },
+  { text: "জ্যোছনা", type: "অর্ধ-তৎসম"},
   { text: "ছেরাদ্দ", type: "অর্ধ-তৎসম" },
   { text: "গিন্নী", type: "অর্ধ-তৎসম" },
   { text: "বোষ্টম", type: "অর্ধ-তৎসম" },
@@ -111,20 +121,23 @@ const words = [
   { text: "ঢেঁকি", type: "দেশি" }
 ];
 
-let currentWord = null;
+let currentWordIndex = -1;
 let correct = 0;
 let wrong = 0;
 let total = 0;
 let wrongAnswers = [];
 
 function updateScore() {
-  document.getElementById("score").innerText =
-    `সঠিক: ${correct} | ভুল: ${wrong} | মোট: ${total}`;
+  document.getElementById("score").innerText = `সঠিক: ${correct} | ভুল: ${wrong} | মোট: ${total}`;
 }
 
 function nextWord() {
-  const randomIndex = Math.floor(Math.random() * words.length);
-  currentWord = words[randomIndex];
+  currentWordIndex++;
+  if(currentWordIndex >= words.length){
+    showFinalToast();
+    return;
+  }
+  currentWord = words[currentWordIndex];
   document.getElementById("word").innerText = currentWord.text;
   document.getElementById("result").innerText = "";
 }
@@ -133,40 +146,39 @@ function checkAnswer(choice) {
   if (!currentWord) return;
   total++;
   const result = document.getElementById("result");
-
   if (choice === currentWord.type) {
     correct++;
     result.innerText = "✅ সঠিক উত্তর!";
     result.style.color = "green";
   } else {
     wrong++;
-    result.innerText = `❌ ভুল! সঠিক উত্তর: ${currentWord.type}`;
+    result.innerText = `❌ ভুল! সঠিক: ${currentWord.type}`;
     result.style.color = "red";
-    wrongAnswers.push({ word: currentWord.text, correct: currentWord.type });
+    wrongAnswers.push(currentWord);
   }
   updateScore();
 }
 
-function showReview() {
-  const review = document.getElementById("reviewSection");
-  const summary = document.getElementById("reviewSummary");
-  const list = document.getElementById("wrongList");
-  review.classList.remove("d-none");
-
-  const wrongPercent = total === 0 ? 0 : Math.round((wrong/total)*100);
-  summary.innerHTML = `সঠিক: ${correct} | ভুল: ${wrong} | মোট: ${total} | ভুলের শতাংশ: ${wrongPercent}%`;
-
-  list.innerHTML = "";
-  if(wrongAnswers.length === 0){
-    list.innerHTML = "<li>সবকিছু ঠিক আছে।</li>";
+function showFinalToast() {
+  const percentCorrect = Math.round((correct / total) * 100);
+  let wrongListHTML = "";
+  if(wrongAnswers.length===0){
+    wrongListHTML = "সবকিছু ঠিক আছে!";
   } else {
-    wrongAnswers.forEach(item => {
-      list.innerHTML += `<li>${item.word} → সঠিক: ${item.correct}</li>`;
+    wrongListHTML = "<b>ভুল শব্দগুলো:</b><br>";
+    wrongAnswers.forEach(w=>{
+      wrongListHTML += `${w.text} → সঠিক: ${w.type}<br>`;
     });
   }
+
+  const toastBody = document.getElementById("toastBody");
+  toastBody.innerHTML = `✅ সঠিকের %: ${percentCorrect}%<br>${wrongListHTML}`;
+
+  const toast = new bootstrap.Toast(document.getElementById('finalToast'), {delay: 10000});
+  toast.show();
 }
 
-// প্রথম শব্দ লোড
+// শুরু
 updateScore();
 nextWord();
 </script>
