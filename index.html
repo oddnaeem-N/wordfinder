@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>শব্দ কুইজ MCQ স্টাইল</title>
+<title>শব্দ কুইজ MCQ + Origin</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body {
@@ -18,13 +18,13 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 .word {
-  font-size: 40px;
+  font-size: 36px;
   font-weight: bold;
-  margin-bottom: 25px;
+  margin-bottom: 10px;
 }
 .result {
-  margin-top: 15px;
-  font-size: 20px;
+  margin-top: 10px;
+  font-size: 18px;
   font-weight: 600;
 }
 .btn-group-mcq {
@@ -73,6 +73,7 @@ body {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// দুটি লিস্ট
 const words = [
   { text: "চন্দ্র", type: "তৎসম" },
   { text: "সূর্য", type: "তৎসম" },
@@ -100,11 +101,30 @@ const words = [
   { text: "ঢেঁকি", type: "দেশি" }
 ];
 
+const originWords = [
+  { text: "চা", language: "চীনা" },
+  { text: "লুঙ্গি", language: "বার্মা" }
+];
+
+// originWords MCQ অপশন আলাদা
+const originOptions = ["চীনা","বার্মা","হিন্দি","ইংরেজি"];
+
+let allWords = [...words, ...originWords];
 let currentWordIndex = -1;
 let correct = 0;
 let wrong = 0;
 let total = 0;
 let answered = false;
+
+// Shuffle
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+shuffleArray(allWords);
 
 function updateScore() {
   document.getElementById("score").innerText = `সঠিক: ${correct} | ভুল: ${wrong} | মোট: ${total}`;
@@ -113,25 +133,33 @@ function updateScore() {
 function nextWord() {
   answered = false;
   currentWordIndex++;
-  if(currentWordIndex >= words.length){
+  if(currentWordIndex >= allWords.length){
     alert("সব শব্দ শেষ!");
     return;
   }
 
-  const currentWord = words[currentWordIndex];
+  const currentWord = allWords[currentWordIndex];
   document.getElementById("word").innerText = currentWord.text;
   document.getElementById("result").innerText = "";
 
   const btns = document.querySelectorAll(".btn-group-mcq .btn");
   btns.forEach(b => b.disabled = false);
 
-  // অপশন তৈরি: সঠিক একবার, বাকি 3 এলোমেলো
-  const allTypes = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি"];
-  const otherTypes = allTypes.filter(t => t !== currentWord.type);
-  const shuffledOthers = otherTypes.sort(()=>0.5-Math.random());
-  const options = shuffledOthers.slice(0,3);
-  const correctIndex = Math.floor(Math.random()*4);
-  options.splice(correctIndex, 0, currentWord.type);
+  let options = [];
+  let correctIndex = Math.floor(Math.random()*4);
+
+  if(currentWord.language){
+    // originWords MCQ অপশন
+    options = originOptions.filter(l => l !== currentWord.language);
+    options = shuffleArray(options).slice(0,3);
+    options.splice(correctIndex, 0, currentWord.language);
+  } else {
+    // words MCQ
+    const types = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি"];
+    options = types.filter(t => t !== currentWord.type);
+    options = shuffleArray(options).slice(0,3);
+    options.splice(correctIndex, 0, currentWord.type);
+  }
 
   btns.forEach((btn,index)=>{
     btn.dataset.type = options[index];
@@ -141,6 +169,8 @@ function nextWord() {
 
 function checkAnswer(btnElement) {
   const result = document.getElementById("result");
+  const currentWord = allWords[currentWordIndex];
+  const selectedType = btnElement.dataset.type || "";
 
   if(answered){
     result.innerText = "⚠️ প্রশ্ন লক হয়েছে, পরবর্তী প্রশ্নে যান।";
@@ -150,18 +180,17 @@ function checkAnswer(btnElement) {
 
   answered = true;
   btnElement.disabled = true;
-
-  const currentWord = words[currentWordIndex];
-  const selectedType = btnElement.dataset.type;
-
   total++;
-  if(selectedType === currentWord.type){
+
+  if(currentWord.type && selectedType === currentWord.type){
     correct++;
-    // শুধু সঠিক অংশ সবুজ
     result.innerHTML = `✅ <span style="color:green">সঠিক: ${currentWord.type}</span>`;
+  } else if(currentWord.language && selectedType === currentWord.language){
+    correct++;
+    result.innerHTML = `✅ সঠিক`;
   } else {
     wrong++;
-    result.innerHTML = `❌ ভুল! সঠিক: <span style="color:green">${currentWord.type}</span>`;
+    result.innerHTML = `❌ ভুল! <span style="color:green">সঠিক: ${currentWord.language}</span>`;
   }
 
   updateScore();
