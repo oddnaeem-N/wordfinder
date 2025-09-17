@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>বাংলা ভাষার শব্দ</title>
+<title>শব্দ কুইজ MCQ স্টাইল</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body {
@@ -38,14 +38,6 @@ body {
   min-height: 60px;
   font-size: 18px;
 }
-.review-section {
-  max-width: 500px;
-  margin: 20px auto;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  background-color: #fff3cd;
-}
 </style>
 </head>
 <body>
@@ -58,15 +50,14 @@ body {
       <div id="word" class="word">লোড হচ্ছে...</div>
 
       <div class="btn-group-mcq">
-        <button class="btn btn-primary" onclick="checkAnswer('A', this)">A</button>
-        <button class="btn btn-success" onclick="checkAnswer('B', this)">B</button>
-        <button class="btn btn-warning" onclick="checkAnswer('C', this)">C</button>
-        <button class="btn btn-danger" onclick="checkAnswer('D', this)">D</button>
+        <button class="btn btn-primary" onclick="checkAnswer(this)">A</button>
+        <button class="btn btn-success" onclick="checkAnswer(this)">B</button>
+        <button class="btn btn-warning" onclick="checkAnswer(this)">C</button>
+        <button class="btn btn-danger" onclick="checkAnswer(this)">D</button>
       </div>
 
       <div class="result" id="result"></div>
       <button class="btn btn-secondary mt-3" onclick="nextWord()">পরের শব্দ</button>
-      <button class="btn btn-dark mt-3" onclick="showReview()">রিভিউ</button>
     </div>
   </div>
 
@@ -76,13 +67,6 @@ body {
       <h5 class="card-title">📊 স্কোর</h5>
       <p id="score">সঠিক: 0 | ভুল: 0 | মোট: 0</p>
     </div>
-  </div>
-
-  <!-- Review Section -->
-  <div id="reviewSection" class="review-section d-none">
-    <h5>📝 রিভিউ</h5>
-    <p id="reviewSummary"></p>
-    <ul id="wrongList"></ul>
   </div>
 
 </div>
@@ -120,16 +104,7 @@ let currentWordIndex = -1;
 let correct = 0;
 let wrong = 0;
 let total = 0;
-let wrongAnswers = [];
 let answered = false;
-
-// MCQ অপশন mapping
-function getOptionsForWord(word){
-  // A,B,C,D কে ধরনের সাথে মিলিয়ে দিন
-  const types = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি"];
-  const shuffled = types.sort(()=>0.5-Math.random());
-  return shuffled;
-}
 
 function updateScore() {
   document.getElementById("score").innerText = `সঠিক: ${correct} | ভুল: ${wrong} | মোট: ${total}`;
@@ -139,68 +114,57 @@ function nextWord() {
   answered = false;
   currentWordIndex++;
   if(currentWordIndex >= words.length){
-    alert("সব শব্দ শেষ! রিভিউ দেখুন।");
+    alert("সব শব্দ শেষ!");
     return;
   }
-  currentWord = words[currentWordIndex];
+
+  const currentWord = words[currentWordIndex];
   document.getElementById("word").innerText = currentWord.text;
   document.getElementById("result").innerText = "";
 
-  // বাটন সক্রিয় করা
   const btns = document.querySelectorAll(".btn-group-mcq .btn");
-  btns.forEach(b => {
-    b.disabled = false;
-  });
+  btns.forEach(b => b.disabled = false);
 
-  // MCQ অপশন assign
-  const options = getOptionsForWord(currentWord);
-  const btnsArray = Array.from(btns);
-  btnsArray.forEach((btn,index)=>{
-    btn.dataset.type = options[index];  // এই বাটনের type
-    btn.innerText = options[index];
+  // অপশন তৈরি: সঠিক একবার, বাকি 3 এলোমেলো
+  const allTypes = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি"];
+  const otherTypes = allTypes.filter(t => t !== currentWord.type);
+  const shuffledOthers = otherTypes.sort(()=>0.5-Math.random());
+  const options = shuffledOthers.slice(0,3);
+  const correctIndex = Math.floor(Math.random()*4);
+  options.splice(correctIndex, 0, currentWord.type);
+
+  btns.forEach((btn,index)=>{
+    btn.dataset.type = options[index];
+    btn.innerText = String.fromCharCode(65+index) + ". " + options[index];
   });
 }
 
-function checkAnswer(choice, btnElement) {
-  if(answered) return;
-  answered = true;
+function checkAnswer(btnElement) {
+  const result = document.getElementById("result");
 
-  // সব বাটন লক
-  const btns = document.querySelectorAll(".btn-group-mcq .btn");
-  btns.forEach(b => b.disabled = true);
+  if(answered){
+    result.innerText = "⚠️ প্রশ্ন লক হয়েছে, পরবর্তী প্রশ্নে যান।";
+    result.style.color = "orange";
+    return;
+  }
+
+  answered = true;
+  btnElement.disabled = true;
+
+  const currentWord = words[currentWordIndex];
+  const selectedType = btnElement.dataset.type;
 
   total++;
-  const result = document.getElementById("result");
-  if(choice === currentWord.type){
+  if(selectedType === currentWord.type){
     correct++;
-    result.innerText = "✅ সঠিক উত্তর!";
-    result.style.color = "green";
+    // শুধু সঠিক অংশ সবুজ
+    result.innerHTML = `✅ <span style="color:green">সঠিক: ${currentWord.type}</span>`;
   } else {
     wrong++;
-    result.innerText = `❌ ভুল! সঠিক: ${currentWord.type}`;
-    result.style.color = "red";
-    wrongAnswers.push(currentWord);
+    result.innerHTML = `❌ ভুল! সঠিক: <span style="color:green">${currentWord.type}</span>`;
   }
+
   updateScore();
-}
-
-function showReview() {
-  const review = document.getElementById("reviewSection");
-  const summary = document.getElementById("reviewSummary");
-  const list = document.getElementById("wrongList");
-  review.classList.remove("d-none");
-
-  const wrongPercent = total === 0 ? 0 : Math.round((wrong/total)*100);
-  summary.innerHTML = `সঠিক: ${correct} | ভুল: ${wrong} | মোট: ${total} | ভুলের শতাংশ: ${wrongPercent}%`;
-
-  list.innerHTML = "";
-  if(wrongAnswers.length === 0){
-    list.innerHTML = "<li>সবকিছু ঠিক আছে।</li>";
-  } else {
-    wrongAnswers.forEach(item => {
-      list.innerHTML += `<li>${item.text} → সঠিক: ${item.type}</li>`;
-    });
-  }
 }
 
 // প্রথম শব্দ লোড
@@ -208,4 +172,4 @@ updateScore();
 nextWord();
 </script>
 </body>
-  </html>
+</html>
