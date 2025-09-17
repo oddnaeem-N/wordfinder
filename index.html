@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>শব্দ কুইজ</title>
+  <style>
+    body {
+      font-family: "Noto Sans Bengali", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #f2f2f2;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 420px;
+    }
+    h1 {
+      font-size: 22px;
+      margin-bottom: 15px;
+    }
+    .options button {
+      margin: 6px;
+      padding: 10px 16px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #0077ff;
+      color: white;
+      transition: 0.3s;
+    }
+    .options button:hover {
+      background: #005fcc;
+    }
+    .result {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .next-btn {
+      margin-top: 15px;
+      background: #28a745;
+      padding: 10px 16px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 id="word">লোড হচ্ছে...</h1>
+    <div class="options">
+      <button onclick="checkAnswer('তৎসম')">তৎসম</button>
+      <button onclick="checkAnswer('তদ্ভব')">তদ্ভব</button>
+      <button onclick="checkAnswer('অর্ধ-তৎসম')">অর্ধ-তৎসম</button>
+      <button onclick="checkAnswer('দেশি')">দেশি</button>
+      <button onclick="checkAnswer('বিদেশি')">বিদেশি</button>
+    </div>
+    <div class="result" id="result"></div>
+    <button class="next-btn" onclick="nextWord()">পরের শব্দ</button>
+  </div>
+
+  <script>
+    const words = [
+      // তৎসম
+      { text: "চন্দ্র", type: "তৎসম" },
+      { text: "সূর্য", type: "তৎসম" },
+      { text: "নক্ষত্র", type: "তৎসম" },
+      { text: "ভবন", type: "তৎসম" },
+      { text: "ধর্ম", type: "তৎসম" },
+      { text: "পাত্র", type: "তৎসম" },
+      { text: "মনুষ্য", type: "তৎসম" },
+
+      // তদ্ভব
+      { text: "হাত", type: "তদ্ভব" },
+      { text: "চামার", type: "তদ্ভব" },
+
+      // অর্ধ-তৎসম
+      { text: "জ্যোছনা", type: "অর্ধ-তৎসম" },
+      { text: "ছেরাদ্দ", type: "অর্ধ-তৎসম" },
+      { text: "গিন্নী", type: "অর্ধ-তৎসম" },
+      { text: "বোষ্টম", type: "অর্ধ-তৎসম" },
+      { text: "কুচ্ছিত", type: "অর্ধ-তৎসম" },
+
+      // দেশি শব্দ
+      { text: "কুড়ি", type: "দেশি" },
+      { text: "পেট", type: "দেশি" },
+      { text: "চুলা", type: "দেশি" },
+      { text: "কুলা", type: "দেশি" },
+      { text: "গঞ্জ", type: "দেশি" },
+      { text: "চোঙ্গা", type: "দেশি" },
+      { text: "টোপর", type: "দেশি" },
+      { text: "ডাব", type: "দেশি" },
+      { text: "ডাগর", type: "দেশি" },
+      { text: "ঢেঁকি", type: "দেশি" }
+
+      // চাইলে এখানে বিদেশি শব্দও যোগ করতে পারো
+    ];
+
+    let currentWord = null;
+
+    function nextWord() {
+      const randomIndex = Math.floor(Math.random() * words.length);
+      currentWord = words[randomIndex];
+      document.getElementById("word").innerText = currentWord.text;
+      document.getElementById("result").innerText = "";
+    }
+
+    function checkAnswer(choice) {
+      if (!currentWord) return;
+      if (choice === currentWord.type) {
+        document.getElementById("result").innerText = "✅ সঠিক উত্তর!";
+        document.getElementById("result").style.color = "green";
+      } else {
+        document.getElementById("result").innerText = "❌ ভুল! সঠিক: " + currentWord.type;
+        document.getElementById("result").style.color = "red";
+      }
+    }
+
+    // প্রথম শব্দ লোড
+    nextWord();
+  </script>
+</body>
+</html>
