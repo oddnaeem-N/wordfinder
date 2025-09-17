@@ -73,7 +73,7 @@ body {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// দুটি লিস্ট
+// শব্দ লিস্ট
 const words = [
   { text: "চন্দ্র", type: "তৎসম" },
   { text: "সূর্য", type: "তৎসম" },
@@ -103,11 +103,12 @@ const words = [
 
 const originWords = [
   { text: "চা", language: "চীনা" },
-  { text: "লুঙ্গি", language: "বার্মা" }
+  { text: "লুঙ্গি", language: "বার্মা" },
+  { text: "আফিম" ,  language: "ইংরেজি" }
 ];
 
 // originWords MCQ অপশন আলাদা
-const originOptions = ["চীনা","বার্মা","হিন্দি","ইংরেজি"];
+const originOptions = ["চীনা","বার্মা","হিন্দি","ইংরেজি","আরবি"];
 
 let allWords = [...words, ...originWords];
 let currentWordIndex = -1;
@@ -182,15 +183,14 @@ function checkAnswer(btnElement) {
   btnElement.disabled = true;
   total++;
 
-  if(currentWord.type && selectedType === currentWord.type){
+  let correctAnswer = currentWord.type || currentWord.language;
+
+  if(selectedType === correctAnswer){
     correct++;
-    result.innerHTML = `✅ <span style="color:green">সঠিক: ${currentWord.type}</span>`;
-  } else if(currentWord.language && selectedType === currentWord.language){
-    correct++;
-    result.innerHTML = `✅ সঠিক`;
+    result.innerHTML = `✅ <span style="color:green">সঠিক: ${correctAnswer}</span>`;
   } else {
     wrong++;
-    result.innerHTML = `❌ ভুল! <span style="color:green">সঠিক: ${currentWord.language}</span>`;
+    result.innerHTML = `❌ ভুল! <span style="color:green">সঠিক: ${correctAnswer}</span>`;
   }
 
   updateScore();
