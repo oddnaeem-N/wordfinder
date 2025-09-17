@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>শব্দ কুইজ</title>
+<title>বাংলা ভাষার শব্দ</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body {
@@ -27,26 +27,24 @@ body {
   font-size: 20px;
   font-weight: 600;
 }
-.btn-group-singleline {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
+.btn-group-mcq {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
+  margin-bottom: 15px;
 }
-.btn-group-singleline .btn {
-  flex: 1 1 calc(20% - 8px);
-  min-width: 60px;
+.btn-group-mcq .btn {
+  width: 100%;
+  min-height: 60px;
+  font-size: 18px;
 }
-.toast-container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1055;
-  max-width: 90%;
-}
-.toast-body {
-  text-align: center;
+.review-section {
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background-color: #fff3cd;
 }
 </style>
 </head>
@@ -59,16 +57,16 @@ body {
     <div class="card-body">
       <div id="word" class="word">লোড হচ্ছে...</div>
 
-      <div class="btn-group-singleline mb-3">
-        <button class="btn btn-primary" onclick="checkAnswer('তৎসম')">তৎসম</button>
-        <button class="btn btn-success" onclick="checkAnswer('তদ্ভব')">তদ্ভব</button>
-        <button class="btn btn-warning" onclick="checkAnswer('অর্ধ-তৎসম')">অর্ধ-তৎসম</button>
-        <button class="btn btn-info" onclick="checkAnswer('দেশি')">দেশি</button>
-        <button class="btn btn-danger" onclick="checkAnswer('বিদেশি')">বিদেশি</button>
+      <div class="btn-group-mcq">
+        <button class="btn btn-primary" onclick="checkAnswer('A', this)">A</button>
+        <button class="btn btn-success" onclick="checkAnswer('B', this)">B</button>
+        <button class="btn btn-warning" onclick="checkAnswer('C', this)">C</button>
+        <button class="btn btn-danger" onclick="checkAnswer('D', this)">D</button>
       </div>
 
       <div class="result" id="result"></div>
       <button class="btn btn-secondary mt-3" onclick="nextWord()">পরের শব্দ</button>
+      <button class="btn btn-dark mt-3" onclick="showReview()">রিভিউ</button>
     </div>
   </div>
 
@@ -80,16 +78,13 @@ body {
     </div>
   </div>
 
-</div>
-
-<!-- Centered Toast -->
-<div class="toast-container">
-  <div id="finalToast" class="toast text-bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
-    <div class="toast-body" id="toastBody">
-      <!-- content dynamically added -->
-    </div>
-    <button type="button" class="btn-close btn-close-white m-auto mt-2" data-bs-dismiss="toast" aria-label="Close"></button>
+  <!-- Review Section -->
+  <div id="reviewSection" class="review-section d-none">
+    <h5>📝 রিভিউ</h5>
+    <p id="reviewSummary"></p>
+    <ul id="wrongList"></ul>
   </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -104,7 +99,7 @@ const words = [
   { text: "মনুষ্য", type: "তৎসম" },
   { text: "হাত", type: "তদ্ভব" },
   { text: "চামার", type: "তদ্ভব" },
-  { text: "জ্যোছনা", type: "অর্ধ-তৎসম"},
+  { text: "জ্যোছনা", type: "অর্ধ-তৎসম" },
   { text: "ছেরাদ্দ", type: "অর্ধ-তৎসম" },
   { text: "গিন্নী", type: "অর্ধ-তৎসম" },
   { text: "বোষ্টম", type: "অর্ধ-তৎসম" },
@@ -126,27 +121,57 @@ let correct = 0;
 let wrong = 0;
 let total = 0;
 let wrongAnswers = [];
+let answered = false;
+
+// MCQ অপশন mapping
+function getOptionsForWord(word){
+  // A,B,C,D কে ধরনের সাথে মিলিয়ে দিন
+  const types = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি"];
+  const shuffled = types.sort(()=>0.5-Math.random());
+  return shuffled;
+}
 
 function updateScore() {
   document.getElementById("score").innerText = `সঠিক: ${correct} | ভুল: ${wrong} | মোট: ${total}`;
 }
 
 function nextWord() {
+  answered = false;
   currentWordIndex++;
   if(currentWordIndex >= words.length){
-    showFinalToast();
+    alert("সব শব্দ শেষ! রিভিউ দেখুন।");
     return;
   }
   currentWord = words[currentWordIndex];
   document.getElementById("word").innerText = currentWord.text;
   document.getElementById("result").innerText = "";
+
+  // বাটন সক্রিয় করা
+  const btns = document.querySelectorAll(".btn-group-mcq .btn");
+  btns.forEach(b => {
+    b.disabled = false;
+  });
+
+  // MCQ অপশন assign
+  const options = getOptionsForWord(currentWord);
+  const btnsArray = Array.from(btns);
+  btnsArray.forEach((btn,index)=>{
+    btn.dataset.type = options[index];  // এই বাটনের type
+    btn.innerText = options[index];
+  });
 }
 
-function checkAnswer(choice) {
-  if (!currentWord) return;
+function checkAnswer(choice, btnElement) {
+  if(answered) return;
+  answered = true;
+
+  // সব বাটন লক
+  const btns = document.querySelectorAll(".btn-group-mcq .btn");
+  btns.forEach(b => b.disabled = true);
+
   total++;
   const result = document.getElementById("result");
-  if (choice === currentWord.type) {
+  if(choice === currentWord.type){
     correct++;
     result.innerText = "✅ সঠিক উত্তর!";
     result.style.color = "green";
@@ -159,28 +184,28 @@ function checkAnswer(choice) {
   updateScore();
 }
 
-function showFinalToast() {
-  const percentCorrect = Math.round((correct / total) * 100);
-  let wrongListHTML = "";
-  if(wrongAnswers.length===0){
-    wrongListHTML = "সবকিছু ঠিক আছে!";
+function showReview() {
+  const review = document.getElementById("reviewSection");
+  const summary = document.getElementById("reviewSummary");
+  const list = document.getElementById("wrongList");
+  review.classList.remove("d-none");
+
+  const wrongPercent = total === 0 ? 0 : Math.round((wrong/total)*100);
+  summary.innerHTML = `সঠিক: ${correct} | ভুল: ${wrong} | মোট: ${total} | ভুলের শতাংশ: ${wrongPercent}%`;
+
+  list.innerHTML = "";
+  if(wrongAnswers.length === 0){
+    list.innerHTML = "<li>সবকিছু ঠিক আছে।</li>";
   } else {
-    wrongListHTML = "<b>ভুল শব্দগুলো:</b><br>";
-    wrongAnswers.forEach(w=>{
-      wrongListHTML += `${w.text} → সঠিক: ${w.type}<br>`;
+    wrongAnswers.forEach(item => {
+      list.innerHTML += `<li>${item.text} → সঠিক: ${item.type}</li>`;
     });
   }
-
-  const toastBody = document.getElementById("toastBody");
-  toastBody.innerHTML = `✅ সঠিকের %: ${percentCorrect}%<br>${wrongListHTML}`;
-
-  const toast = new bootstrap.Toast(document.getElementById('finalToast'), {delay: 10000});
-  toast.show();
 }
 
-// শুরু
+// প্রথম শব্দ লোড
 updateScore();
 nextWord();
 </script>
 </body>
-</html>
+  </html>
