@@ -3,73 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>শব্দ কুইজ</title>
+  <title>শব্দ</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
       font-family: "Noto Sans Bengali", sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background: #f2f2f2;
+      background: #f8f9fa;
     }
-    .card {
-      background: white;
+    .quiz-card {
+      max-width: 500px;
+      margin: 40px auto;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      text-align: center;
-      width: 90%;
-      max-width: 420px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: transform 0.5s ease, opacity 0.5s ease;
     }
-    h1 {
-      font-size: 22px;
-      margin-bottom: 15px;
-    }
-    .options button {
-      margin: 6px;
-      padding: 10px 16px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      background: #0077ff;
-      color: white;
-      transition: 0.3s;
-    }
-    .options button:hover {
-      background: #005fcc;
+    .word {
+      font-size: 40px;
+      font-weight: bold;
+      margin-bottom: 25px;
     }
     .result {
       margin-top: 15px;
-      font-weight: bold;
+      font-size: 20px;
+      font-weight: 600;
     }
-    .next-btn {
-      margin-top: 15px;
-      background: #28a745;
-      padding: 10px 16px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      color: white;
+    /* সোয়াইপ অ্যানিমেশন */
+    .swipe-out {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    .swipe-in {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    .swipe-in-active {
+      transform: translateX(0);
+      opacity: 1;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1 id="word">লোড হচ্ছে...</h1>
-    <div class="options">
-      <button onclick="checkAnswer('তৎসম')">তৎসম</button>
-      <button onclick="checkAnswer('তদ্ভব')">তদ্ভব</button>
-      <button onclick="checkAnswer('অর্ধ-তৎসম')">অর্ধ-তৎসম</button>
-      <button onclick="checkAnswer('দেশি')">দেশি</button>
-      <button onclick="checkAnswer('বিদেশি')">বিদেশি</button>
+  <div class="container">
+    <!-- Quiz Card -->
+    <div id="quizCard" class="card quiz-card text-center">
+      <div class="card-body">
+        <div id="word" class="word">লোড হচ্ছে...</div>
+
+        <div class="d-grid gap-2">
+          <button class="btn btn-primary" onclick="checkAnswer('তৎসম')">তৎসম</button>
+          <button class="btn btn-primary" onclick="checkAnswer('তদ্ভব')">তদ্ভব</button>
+          <button class="btn btn-primary" onclick="checkAnswer('অর্ধ-তৎসম')">অর্ধ-তৎসম</button>
+          <button class="btn btn-primary" onclick="checkAnswer('দেশি')">দেশি</button>
+          <button class="btn btn-primary" onclick="checkAnswer('বিদেশি')">বিদেশি</button>
+        </div>
+
+        <div class="result" id="result"></div>
+        <button class="btn btn-success mt-3" onclick="animateNext()">পরের শব্দ</button>
+      </div>
     </div>
-    <div class="result" id="result"></div>
-    <button class="next-btn" onclick="nextWord()">পরের শব্দ</button>
+
+    <!-- Score Card -->
+    <div class="card quiz-card text-center">
+      <div class="card-body">
+        <h5 class="card-title">📊 স্কোর</h5>
+        <p id="score">সঠিক: 0 | ভুল: 0 | মোট: 0</p>
+      </div>
+    </div>
   </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
     const words = [
@@ -104,31 +109,65 @@
       { text: "ডাব", type: "দেশি" },
       { text: "ডাগর", type: "দেশি" },
       { text: "ঢেঁকি", type: "দেশি" }
-
-      // চাইলে এখানে বিদেশি শব্দও যোগ করতে পারো
     ];
 
     let currentWord = null;
+    let correct = 0;
+    let wrong = 0;
+    let total = 0;
+
+    function updateScore() {
+      document.getElementById("score").innerText =
+        `সঠিক: ${correct} | ভুল: ${wrong} | মোট: ${total}`;
+    }
 
     function nextWord() {
       const randomIndex = Math.floor(Math.random() * words.length);
       currentWord = words[randomIndex];
       document.getElementById("word").innerText = currentWord.text;
       document.getElementById("result").innerText = "";
+      document.getElementById("result").style.color = "";
     }
 
     function checkAnswer(choice) {
       if (!currentWord) return;
+      const result = document.getElementById("result");
+      total++;
       if (choice === currentWord.type) {
-        document.getElementById("result").innerText = "✅ সঠিক উত্তর!";
-        document.getElementById("result").style.color = "green";
+        correct++;
+        result.innerText = "✅ সঠিক উত্তর!";
+        result.style.color = "green";
       } else {
-        document.getElementById("result").innerText = "❌ ভুল! সঠিক: " + currentWord.type;
-        document.getElementById("result").style.color = "red";
+        wrong++;
+        result.innerText = "❌ ভুল! সঠিক উত্তর: " + currentWord.type;
+        result.style.color = "red";
       }
+      updateScore();
+    }
+
+    // অ্যানিমেশন সহ নেক্সট
+    function animateNext() {
+      const card = document.getElementById("quizCard");
+      card.classList.add("swipe-out");
+
+      setTimeout(() => {
+        nextWord();
+        card.classList.remove("swipe-out");
+        card.classList.add("swipe-in");
+
+        setTimeout(() => {
+          card.classList.remove("swipe-in");
+          card.classList.add("swipe-in-active");
+
+          setTimeout(() => {
+            card.classList.remove("swipe-in-active");
+          }, 500);
+        }, 50);
+      }, 500);
     }
 
     // প্রথম শব্দ লোড
+    updateScore();
     nextWord();
   </script>
 </body>
