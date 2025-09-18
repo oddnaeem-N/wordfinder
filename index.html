@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>শব্দ কুইজ MCQ + Origin</title>
+<title>শব্দ </title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body { font-family: "Noto Sans Bengali", sans-serif; background: #f8f9fa; }
@@ -37,148 +37,9 @@ body { font-family: "Noto Sans Bengali", sans-serif; background: #f8f9fa; }
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// ---------------- ডিফল্ট ডেটা -----------------
-const defaultData = {
-  words: [
-      { text: "চন্দ্র", type: "তৎসম" },
-  { text: "সূর্য", type: "তৎসম" },
-  { text: "নক্ষত্র", type: "তৎসম" },
-  { text: "ভবন", type: "তৎসম" },
-  { text: "ধর্ম", type: "তৎসম" },
-  { text: "পাত্র", type: "তৎসম" },
-  { text: "মনুষ্য", type: "তৎসম" },
-  { text: "হাত", type: "তদ্ভব" },
-  { text: "চামার", type: "তদ্ভব" },
-  { text: "জ্যোছনা", type: "অর্ধ-তৎসম" },
-  { text: "ছেরাদ্দ", type: "অর্ধ-তৎসম" },
-  { text: "গিন্নী", type: "অর্ধ-তৎসম" },
-  { text: "বোষ্টম", type: "অর্ধ-তৎসম" },
-  { text: "কুচ্ছিত", type: "অর্ধ-তৎসম" },
-  { text: "কুড়ি", type: "দেশি" },
-  { text: "পেট", type: "দেশি" },
-  { text: "চুলা", type: "দেশি" },
-  { text: "কুলা", type: "দেশি" },
-  { text: "গঞ্জ", type: "দেশি" },
-  { text: "চোঙ্গা", type: "দেশি" },
-  { text: "টোপর", type: "দেশি" },
-  { text: "ডাব", type: "দেশি" },
-  { text: "ডাগর", type: "দেশি" },
-  { text: "ঢেঁকি", type: "দেশি" }
-  ],
-  originWords: [
-{ "text": "আল্লাহ", "language": "আরবি" },
-  { "text": "ইসলাম", "language": "আরবি" },
-   { "text": "ঈমান", "language": "আরবি" },
-  { "text": "ওজু", "language": "আরবি" },
-  { "text": "কোরবানি", "language": "আরবি" },
-  { "text": "কুরআন", "language": "আরবি" },
-  { "text": "জান্নাত", "language": "আরবি" },
-  { "text": "জাহান্নাম", "language": "আরবি" },
-  { "text": "তসবি", "language": "আরবি" },
-  { "text": "জাকাত", "language": "আরবি" },
-  { "text": "হজ", "language": "আরবি" },
-  { "text": "হাদিস", "language": "আরবি" },
-  { "text": "হারাম", "language": "আরবি" },
-  { "text": "হালাল", "language": "আরবি" },
-  { "text": "আদালত", "language": "আরবি" },
-  { "text": "আলেম", "language": "আরবি" },
-  { "text": "ইনসান", "language": "আরবি" },
-  { "text": "ঈদ", "language": "আরবি" },
-  { "text": "উকিল", "language": "আরবি" },
-  { "text": "কানুন", "language": "আরবি" },
-  { "text": "কলম", "language": "আরবি" },
-  { "text": "কিতাব", "language": "আরবি" },
-  { "text": "কেচ্ছা", "language": "আরবি" },
-  { "text": "নগদ", "language": "আরবি" },
-  { "text": "বাকি", "language": "আরবি" },
-  { "text": "মহকুমা", "language": "আরবি" },
-  { "text": "মুন্সেফ", "language": "আরবি" },
-  { "text": "মোক্তার", "language": "আরবি" },
-  { "text": "খোদা", "language": "ফারসি" },
-  { "text": "গুনাহ", "language": "ফারসি" },
-  { "text": "নামাজ", "language": "ফারসি" },
-  { "text": "পয়গম্বর", "language": "ফারসি" },
-  { "text": "ফেরেশতা", "language": "ফারসি" },
-  { "text": "বেহেশত", "language": "ফারসি" },
-  { "text": "রোজা", "language": "ফারসি" },
-  { "text": "কারখানা", "language": "ফারসি" },
-  { "text": "চশমা", "language": "ফারসি" },
-  { "text": "জবানবন্দি", "language": "ফারসি" },
-  { "text": "তারিখ", "language": "ফারসি" },
-  { "text": "তোশক", "language": "ফারসি" },
-  { "text": "দফতর", "language": "ফারসি" },
-  { "text": "দোকান", "language": "ফারসি" },
-  { "text": "দস্তখত", "language": "ফারসি" },
-  { "text": "দৌলত", "language": "ফারসি" },
-  { "text": "বাদশাহ", "language": "ফারসি" },
-  { "text": "বেগম", "language": "ফারসি" },
-  { "text": "মেথর", "language": "ফারসি" },
-  { "text": "আদমি", "language": "ফারসি" },
-  { "text": "আমদানি", "language": "ফারসি" },
-  { "text": "জানোয়ার", "language": "ফারসি" },
-  { "text": "জিন্দা", "language": "ফারসি" },
-  { "text": "নমুনা", "language": "ফারসি" },
-  { "text": "বদমাশ", "language": "ফারসি" },
-  { "text": "রফতানি", "language": "ফারসি" },
-  { "text": "হাঙ্গামা", "language": "ফারসি" },
-  { "text": "ইউনিভার্সিটি", "language": "ইংরেজি" },
-  { "text": "ইউনিয়ন", "language": "ইংরেজি" },
-  { "text": "কলেজ", "language": "ইংরেজি" },
-  { "text": "টিন", "language": "ইংরেজি" },
-  { "text": "নভেল", "language": "ইংরেজি" },
-  { "text": "নোট", "language": "ইংরেজি" },
-  { "text": "পাউডার", "language": "ইংরেজি" },
-  { "text": "পেন্সিল", "language": "ইংরেজি" },
-  { "text": "ব্যাগ", "language": "ইংরেজি" },
-  { "text": "ফুটবল", "language": "ইংরেজি" },
-  { "text": "মাস্টার", "language": "ইংরেজি" },
-  { "text": "লাইব্রেরি", "language": "ইংরেজি" },
-  { "text": "স্কুল", "language": "ইংরেজি" },
-  { "text": "আফিম", "language": "ইংরেজি" },
-  { "text": "অফিস", "language": "ইংরেজি" },
-  { "text": "ইস্কুল", "language": "ইংরেজি" },
-  { "text": "বাক্স", "language": "ইংরেজি" },
-  { "text": "হাসপাতাল", "language": "ইংরেজি" },
-  { "text": "বোতল", "language": "ইংরেজি" },
-  { "text": "আনারস", "language": "পর্তুগিজ" },
-  { "text": "আলপিন", "language": "পর্তুগিজ" },
-  { "text": "আলমারি", "language": "পর্তুগিজ" },
-  { "text": "গির্জা", "language": "পর্তুগিজ" },
-  { "text": "গুদাম", "language": "পর্তুগিজ" },
-  { "text": "চাবি", "language": "পর্তুগিজ" },
-  { "text": "পাউরুটি", "language": "পর্তুগিজ" },
-  { "text": "পাদ্রি", "language": "পর্তুগিজ" },
-  { "text": "বালতি", "language": "পর্তুগিজ" },
-  { "text": "কার্তুজ", "language": "ফরাসি" },
-  { "text": "কুপন", "language": "ফরাসি" },
-  { "text": "ডিপো", "language": "ফরাসি" },
-  { "text": "রেস্তোরাঁ", "language": "ফরাসি" },
-  { "text": "ইস্কাপন", "language": "ওলন্দাজ" },
-  { "text": "টেক্কা", "language": "ওলন্দাজ" },
-  { "text": "তুরূপ", "language": "ওলন্দাজ" },
-  { "text": "রুইতন", "language": "ওলন্দাজ" },
-  { "text": "হরতন", "language": "ওলন্দাজ" },
-  { "text": "খন্দর", "language": "গুজরাটি" },
-  { "text": "হরতাল", "language": "গুজরাটি" },
-  { "text": "চাহিদা", "language": "পাঞ্জাবি" },
-  { "text": "শিখ", "language": "পাঞ্জাবি" },
-  { "text": "চাকর", "language": "তুর্কি" },
-  { "text": "চাকু", "language": "তুর্কি" },
-  { "text": "তোপ", "language": "তুর্কি" },
-  { "text": "দারোগা", "language": "তুর্কি" },
-  { "text": "চা", "language": "চীনা" },
-  { "text": "চিনি", "language": "চীনা" },
-  { "text": "ফুঙ্গি", "language": "বার্মিজ" },
-  { "text": "লুঙ্গি", "language": "বার্মিজ" },
-  { "text": "রিক্সা", "language": "জাপানি" },
-  { "text": "হারিকিরি", "language": "জাপানি" }
-  ]
-};
-
 // ---------------- localStorage থেকে ডেটা লোড -----------------
-let quizData = JSON.parse(localStorage.getItem("quizData")) || defaultData;
-
-let allWords = [...quizData.words, ...quizData.originWords];
+let quizData = JSON.parse(localStorage.getItem("quizData"));
+let allWords = [];
 const originOptions = ["চিনা","বার্মা","হিন্দি","ইংরেজি","আরবি","তুর্কি","ওলন্দাজ","পাঞ্জাবি"];
 
 let currentWordIndex = -1;
@@ -192,11 +53,20 @@ function shuffleArray(array) {
   }
   return array;
 }
-shuffleArray(allWords);
 
 // ---------------- Load Next Word -----------------
 function nextWord() {
+  if(!quizData){
+    document.getElementById("word").innerText = "⚠️ এখনো কোনো ডেটা নেই! আগে Admin Panel থেকে শব্দ যোগ করুন।";
+    return;
+  }
+
   answered = false;
+  if(allWords.length === 0){
+    allWords = [...quizData.words, ...quizData.originWords];
+    shuffleArray(allWords);
+  }
+
   currentWordIndex++;
   if(currentWordIndex >= allWords.length){
     alert("সব শব্দ শেষ!");
@@ -214,10 +84,12 @@ function nextWord() {
   const correctIndex = Math.floor(Math.random()*4);
 
   if(currentWord.language){
+    // Origin word
     options = originOptions.filter(l => l !== currentWord.language);
     options = shuffleArray(options).slice(0,3);
     options.splice(correctIndex, 0, currentWord.language);
   } else {
+    // Normal word
     const types = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি","বিদেশি"];
     options = types.filter(t => t !== currentWord.type);
     options = shuffleArray(options).slice(0,3);
@@ -251,7 +123,7 @@ function checkAnswer(btn) {
   }
 }
 
-// প্রথম শব্দ লোড
+// ---------------- On Load -----------------
 nextWord();
 </script>
 </body>
