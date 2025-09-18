@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title> বাংলা ভাষার শব্দ … </title>
+<title>শব্দ কুইজ + অ্যাডমিন</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body { font-family: "Noto Sans Bengali", sans-serif; background: #f8f9fa; }
@@ -49,11 +49,11 @@ textarea { font-family: monospace; }
 
   <!-- ================= Admin Panel ================= -->
   <div id="adminPanel" class="admin-panel">
-    <h2 class="mb-4">📑</h2>
-    <button class="btn btn-danger mb-4" onclick="resetData()">♻️Default</button>
+    <h2 class="mb-4">🧩 শব্দের ডেটাবেজ</h2>
+    <button class="btn btn-danger mb-4" onclick="resetData()">♻️ Default</button>
 
     <!-- Words Section -->
-    <h3>Words</h3>
+    <h3>Words </h3>
     <table class="table table-bordered table-striped" id="wordsTable">
       <thead class="table-dark">
         <tr><th>#</th><th>শব্দ</th><th>ধরন</th><th>অ্যাকশন</th></tr>
@@ -67,11 +67,12 @@ textarea { font-family: monospace; }
           <option value="তদ্ভব">তদ্ভব</option>
           <option value="অর্ধ-তৎসম">অর্ধ-তৎসম</option>
           <option value="দেশি">দেশি</option>
+          <option value="বিদেশি">বিদেশি</option>
         </select>
       </div>
-      <div class="col-md-2 d-grid"><button class="btn btn-success" onclick="addWord()">➕ যোগ</button></div>
+      <div class="col-md-2 d-grid"><button class="btn btn-success" onclick="addWord()"> যোগ</button></div>
     </div>
-    <button class="btn btn-info mb-3" onclick="toggleJson('words')">📄 View Words JSON</button>
+    <button class="btn btn-info mb-3" onclick="toggleJson('words')">📄</button>
 
     <!-- Origin Words Section -->
     <h3>Origin Words</h3>
@@ -83,17 +84,17 @@ textarea { font-family: monospace; }
     <div class="row g-2 mb-3">
       <div class="col-md-6"><input id="originText" class="form-control" placeholder="শব্দ"></div>
       <div class="col-md-4"><input id="originLang" class="form-control" placeholder="ভাষা (যেমন: আরবি, ফারসি, ইংরেজি)"></div>
-      <div class="col-md-2 d-grid"><button class="btn btn-success" onclick="addOrigin()">➕ যোগ</button></div>
+      <div class="col-md-2 d-grid"><button class="btn btn-success" onclick="addOrigin()"> যোগ</button></div>
     </div>
-    <button class="btn btn-info mb-3" onclick="toggleJson('origin')">📄 View Origin Words JSON</button>
+    <button class="btn btn-info mb-3" onclick="toggleJson('origin')">📄</button>
 
     <!-- JSON Viewer -->
     <div id="jsonBoxWords" class="jsonBox">
-      <label class="fw-bold mt-3"></label>
+      <label class="fw-bold mt-3">Words JSON (copy only):</label>
       <textarea id="jsonViewWords" class="form-control" rows="10" readonly></textarea>
     </div>
     <div id="jsonBoxOrigin" class="jsonBox">
-      <label class="fw-bold mt-3"></label>
+      <label class="fw-bold mt-3">Origin Words JSON (copy only):</label>
       <textarea id="jsonViewOrigin" class="form-control" rows="10" readonly></textarea>
     </div>
   </div>
@@ -104,33 +105,36 @@ textarea { font-family: monospace; }
 // ---------------- ডিফল্ট ডেটা -----------------
 const defaultData = {
   words: [
-    { text: "চন্দ্র", type: "তৎসম" },
-    { text: "সূর্য", type: "তৎসম" },
-    { text: "নক্ষত্র", type: "তৎসম" },
-    { text: "হাত", type: "তদ্ভব" },
-    { text: "জ্যোছনা", type: "অর্ধ-তৎসম" },
-    { text: "কুড়ি", type: "দেশি" }
+ {"text":"চন্দ্র","type":"তৎসম"},
+{"text":"সূর্য","type":"তৎসম"},
+{"text":"নক্ষত্র","type":"তৎসম"},
+{"text":"ভবন","type":"তৎসম"},
+{"text":"ধর্ম","type":"তৎসম"},
+{"text":"পাত্র","type":"তৎসম"},
+{"text":"মনুষ্য","type":"তৎসম"},
+{"text":"হস্ত","type":"তৎসম"},
+{"text":"হাত","type":"তদ্ভব"},
+{"text":"চর্মকার","type":"তৎসম"},
+{"text":"চামার","type":"তদ্ভব"},
+{"text":"জ্যোছনা","type":"অর্ধ-তৎসম"},
+{"text":"ছেরাদ্দ","type":"অর্ধ-তৎসম"},
+{"text":"গিন্নী","type":"অর্ধ-তৎসম"},
+{"text":"বোষ্টম","type":"অর্ধ-তৎসম"},
+{"text":"কুচ্ছিত","type":"অর্ধ-তৎসম"},
+{"text":"জ্যোৎস্না","type":"তৎসম"},
+{"text":"শ্রাদ্ধ","type":"তৎসম"},
+{"text":"গৃহিণী","type":"তৎসম"},
+{"text":"বৈষ্ণব","type":"তৎসম"},
+{"text":"কুৎসিত","type":"তৎসম"},
+{"text":"কুলা","type":"দেশি"},
+{"text":"গঞ্জ","type":"দেশি"},
+{"text":"চোঙ্গা","type":"দেশি"},
+{"text":"টোপর","type":"দেশি"},
+{"text":"ডাব","type":"দেশি"},
+{"text":"ডাগর","type":"দেশি"},
+{"text":"ঢেঁকি","type":"দেশি"}
   ],
   originWords: [
-{"text":"আল্লাহ","language":"আরবি"},
-{"text":"ইসলাম","language":"আরবি"},
-{"text":"ঈমান","language":"আরবি"},
-{"text":"ওজু","language":"আরবি"},
-{"text":"কোরবানি","language":"আরবি"},
-{"text":"কুরআন","language":"আরবি"},
-{"text":"জান্নাত","language":"আরবি"},
-{"text":"জাহান্নাম","language":"আরবি"},
-{"text":"তসবি","language":"আরবি"},
-{"text":"জাকাত","language":"আরবি"},
-{"text":"হজ","language":"আরবি"},
-{"text":"হাদিস","language":"আরবি"},
-{"text":"হারাম","language":"আরবি"},
-{"text":"হালাল","language":"আরবি"},
-{"text":"আদালত","language":"আরবি"},
-{"text":"আলেম","language":"আরবি"},
-{"text":"ইনসান","language":"আরবি"},
-{"text":"ঈদ","language":"আরবি"},
-{"text":"উকিল","language":"আরবি"},
 {"text":"কানুন","language":"আরবি"},
 {"text":"কলম","language":"আরবি"},
 {"text":"কিতাব","language":"আরবি"},
@@ -212,12 +216,9 @@ const defaultData = {
 {"text":"চাকু","language":"তুর্কি"},
 {"text":"তোপ","language":"তুর্কি"},
 {"text":"দারোগা","language":"তুর্কি"},
-{"text":"চা","language":"চীনা"},
-{"text":"চিনি","language":"চীনা"},
-{"text":"ফুঙ্গি","language":"বার্মিজ"},
-{"text":"লুঙ্গি","language":"বার্মিজ"},
 {"text":"রিক্সা","language":"জাপানি"},
-{"text":"হারিকিরি","language":"জাপানি"}
+{"text":"হারিকিরি","language":"জাপানি"},
+{"text":"জামদানি","language":"ফারসি"}
   ]
 };
 
