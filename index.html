@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>শব্দ </title>
+<title>শব্দ কুইজ + অ্যাডমিন</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body { font-family: "Noto Sans Bengali", sans-serif; background: #f8f9fa; }
@@ -12,40 +12,233 @@ body { font-family: "Noto Sans Bengali", sans-serif; background: #f8f9fa; }
 .result { margin-top: 10px; font-size: 18px; font-weight: 600; }
 .btn-group-mcq { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
 .btn-group-mcq .btn { width: 100%; min-height: 60px; font-size: 18px; }
+.admin-panel { display:none; margin-top:40px; }
+.table td, .table th { vertical-align: middle; }
+.jsonBox { display:none; margin-top:20px; }
+textarea { font-family: monospace; }
 </style>
 </head>
 <body>
+
 <div class="container">
-  <div class="d-flex justify-content-end my-3">
-    <a href="admin.html" class="btn btn-warning">Admin Panel</a>
+
+  <!-- Toggle Buttons -->
+  <div class="text-end mt-3">
+    <button id="quizBtn" class="btn btn-primary" onclick="showQuiz()">🎮 কুইজ</button>
+    <button id="adminBtn" class="btn btn-dark" onclick="showAdmin()">⚙️ অ্যাডমিন</button>
   </div>
 
-  <div id="quizCard" class="card quiz-card text-center">
-    <div class="card-body">
-      <div id="word" class="word">লোড হচ্ছে...</div>
-      <div class="btn-group-mcq">
-        <button class="btn btn-primary" onclick="checkAnswer(this)">A</button>
-        <button class="btn btn-success" onclick="checkAnswer(this)">B</button>
-        <button class="btn btn-warning" onclick="checkAnswer(this)">C</button>
-        <button class="btn btn-danger" onclick="checkAnswer(this)">D</button>
+  <!-- Quiz Section -->
+  <div id="quizSection">
+    <div class="card quiz-card text-center">
+      <div class="card-body">
+        <div id="word" class="word">লোড হচ্ছে...</div>
+
+        <div class="btn-group-mcq">
+          <button class="btn btn-primary" onclick="checkAnswer(this)">A</button>
+          <button class="btn btn-success" onclick="checkAnswer(this)">B</button>
+          <button class="btn btn-warning" onclick="checkAnswer(this)">C</button>
+          <button class="btn btn-danger" onclick="checkAnswer(this)">D</button>
+        </div>
+
+        <div class="result" id="result"></div>
+        <button class="btn btn-secondary mt-3" onclick="nextWord()">পরের শব্দ</button>
       </div>
-      <div class="result" id="result"></div>
-      <button class="btn btn-secondary mt-3" onclick="nextWord()">পরের শব্দ</button>
+    </div>
+  </div>
+
+  <!-- ================= Admin Panel ================= -->
+  <div id="adminPanel" class="admin-panel">
+    <h2 class="mb-4">📑 কুইজ ডাটা এডমিন (CRUD + JSON Copy)</h2>
+    <button class="btn btn-danger mb-4" onclick="resetData()">♻️ Reset to Default</button>
+
+    <!-- Words Section -->
+    <h3>Words (তৎসম / তদ্ভব / অর্ধ-তৎসম / দেশি)</h3>
+    <table class="table table-bordered table-striped" id="wordsTable">
+      <thead class="table-dark">
+        <tr><th>#</th><th>শব্দ</th><th>ধরন</th><th>অ্যাকশন</th></tr>
+      </thead><tbody></tbody>
+    </table>
+    <div class="row g-2 mb-3">
+      <div class="col-md-6"><input id="wordText" class="form-control" placeholder="শব্দ"></div>
+      <div class="col-md-4">
+        <select id="wordType" class="form-select">
+          <option value="তৎসম">তৎসম</option>
+          <option value="তদ্ভব">তদ্ভব</option>
+          <option value="অর্ধ-তৎসম">অর্ধ-তৎসম</option>
+          <option value="দেশি">দেশি</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-grid"><button class="btn btn-success" onclick="addWord()">➕ যোগ</button></div>
+    </div>
+    <button class="btn btn-info mb-3" onclick="toggleJson('words')">📄 View Words JSON</button>
+
+    <!-- Origin Words Section -->
+    <h3>Origin Words</h3>
+    <table class="table table-bordered table-striped" id="originTable">
+      <thead class="table-dark">
+        <tr><th>#</th><th>শব্দ</th><th>ভাষা</th><th>অ্যাকশন</th></tr>
+      </thead><tbody></tbody>
+    </table>
+    <div class="row g-2 mb-3">
+      <div class="col-md-6"><input id="originText" class="form-control" placeholder="শব্দ"></div>
+      <div class="col-md-4"><input id="originLang" class="form-control" placeholder="ভাষা (যেমন: আরবি, ফারসি, ইংরেজি)"></div>
+      <div class="col-md-2 d-grid"><button class="btn btn-success" onclick="addOrigin()">➕ যোগ</button></div>
+    </div>
+    <button class="btn btn-info mb-3" onclick="toggleJson('origin')">📄 View Origin Words JSON</button>
+
+    <!-- JSON Viewer -->
+    <div id="jsonBoxWords" class="jsonBox">
+      <label class="fw-bold mt-3">Words JSON (copy only):</label>
+      <textarea id="jsonViewWords" class="form-control" rows="10" readonly></textarea>
+    </div>
+    <div id="jsonBoxOrigin" class="jsonBox">
+      <label class="fw-bold mt-3">Origin Words JSON (copy only):</label>
+      <textarea id="jsonViewOrigin" class="form-control" rows="10" readonly></textarea>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// ---------------- localStorage থেকে ডেটা লোড -----------------
-let quizData = JSON.parse(localStorage.getItem("quizData"));
-let allWords = [];
-const originOptions = ["চিনা","বার্মা","হিন্দি","ইংরেজি","আরবি","তুর্কি","ওলন্দাজ","পাঞ্জাবি"];
+// ---------------- ডিফল্ট ডেটা -----------------
+const defaultData = {
+  words: [
+    { text: "চন্দ্র", type: "তৎসম" },
+    { text: "সূর্য", type: "তৎসম" },
+    { text: "নক্ষত্র", type: "তৎসম" },
+    { text: "হাত", type: "তদ্ভব" },
+    { text: "জ্যোছনা", type: "অর্ধ-তৎসম" },
+    { text: "কুড়ি", type: "দেশি" }
+  ],
+  originWords: [
+{"text":"আল্লাহ","language":"আরবি"},
+{"text":"ইসলাম","language":"আরবি"},
+{"text":"ঈমান","language":"আরবি"},
+{"text":"ওজু","language":"আরবি"},
+{"text":"কোরবানি","language":"আরবি"},
+{"text":"কুরআন","language":"আরবি"},
+{"text":"জান্নাত","language":"আরবি"},
+{"text":"জাহান্নাম","language":"আরবি"},
+{"text":"তসবি","language":"আরবি"},
+{"text":"জাকাত","language":"আরবি"},
+{"text":"হজ","language":"আরবি"},
+{"text":"হাদিস","language":"আরবি"},
+{"text":"হারাম","language":"আরবি"},
+{"text":"হালাল","language":"আরবি"},
+{"text":"আদালত","language":"আরবি"},
+{"text":"আলেম","language":"আরবি"},
+{"text":"ইনসান","language":"আরবি"},
+{"text":"ঈদ","language":"আরবি"},
+{"text":"উকিল","language":"আরবি"},
+{"text":"কানুন","language":"আরবি"},
+{"text":"কলম","language":"আরবি"},
+{"text":"কিতাব","language":"আরবি"},
+{"text":"কেচ্ছা","language":"আরবি"},
+{"text":"নগদ","language":"আরবি"},
+{"text":"বাকি","language":"আরবি"},
+{"text":"মহকুমা","language":"আরবি"},
+{"text":"মুন্সেফ","language":"আরবি"},
+{"text":"মোক্তার","language":"আরবি"},
+{"text":"খোদা","language":"ফারসি"},
+{"text":"গুনাহ","language":"ফারসি"},
+{"text":"নামাজ","language":"ফারসি"},
+{"text":"পয়গম্বর","language":"ফারসি"},
+{"text":"ফেরেশতা","language":"ফারসি"},
+{"text":"বেহেশত","language":"ফারসি"},
+{"text":"রোজা","language":"ফারসি"},
+{"text":"কারখানা","language":"ফারসি"},
+{"text":"চশমা","language":"ফারসি"},
+{"text":"জবানবন্দি","language":"ফারসি"},
+{"text":"তারিখ","language":"ফারসি"},
+{"text":"তোশক","language":"ফারসি"},
+{"text":"দফতর","language":"ফারসি"},
+{"text":"দোকান","language":"ফারসি"},
+{"text":"দস্তখত","language":"ফারসি"},
+{"text":"দৌলত","language":"ফারসি"},
+{"text":"বাদশাহ","language":"ফারসি"},
+{"text":"বেগম","language":"ফারসি"},
+{"text":"মেথর","language":"ফারসি"},
+{"text":"আদমি","language":"ফারসি"},
+{"text":"আমদানি","language":"ফারসি"},
+{"text":"জানোয়ার","language":"ফারসি"},
+{"text":"জিন্দা","language":"ফারসি"},
+{"text":"নমুনা","language":"ফারসি"},
+{"text":"বদমাশ","language":"ফারসি"},
+{"text":"রফতানি","language":"ফারসি"},
+{"text":"হাঙ্গামা","language":"ফারসি"},
+{"text":"ইউনিভার্সিটি","language":"ইংরেজি"},
+{"text":"ইউনিয়ন","language":"ইংরেজি"},
+{"text":"কলেজ","language":"ইংরেজি"},
+{"text":"টিন","language":"ইংরেজি"},
+{"text":"নভেল","language":"ইংরেজি"},
+{"text":"নোট","language":"ইংরেজি"},
+{"text":"পাউডার","language":"ইংরেজি"},
+{"text":"পেন্সিল","language":"ইংরেজি"},
+{"text":"ব্যাগ","language":"ইংরেজি"},
+{"text":"ফুটবল","language":"ইংরেজি"},
+{"text":"মাস্টার","language":"ইংরেজি"},
+{"text":"লাইব্রেরি","language":"ইংরেজি"},
+{"text":"স্কুল","language":"ইংরেজি"},
+{"text":"আফিম","language":"ইংরেজি"},
+{"text":"অফিস","language":"ইংরেজি"},
+{"text":"ইস্কুল","language":"ইংরেজি"},
+{"text":"বাক্স","language":"ইংরেজি"},
+{"text":"হাসপাতাল","language":"ইংরেজি"},
+{"text":"বোতল","language":"ইংরেজি"},
+{"text":"আনারস","language":"পর্তুগিজ"},
+{"text":"আলপিন","language":"পর্তুগিজ"},
+{"text":"আলমারি","language":"পর্তুগিজ"},
+{"text":"গির্জা","language":"পর্তুগিজ"},
+{"text":"গুদাম","language":"পর্তুগিজ"},
+{"text":"চাবি","language":"পর্তুগিজ"},
+{"text":"পাউরুটি","language":"পর্তুগিজ"},
+{"text":"পাদ্রি","language":"পর্তুগিজ"},
+{"text":"বালতি","language":"পর্তুগিজ"},
+{"text":"কার্তুজ","language":"ফরাসি"},
+{"text":"কুপন","language":"ফরাসি"},
+{"text":"ডিপো","language":"ফরাসি"},
+{"text":"রেস্তোরাঁ","language":"ফরাসি"},
+{"text":"ইস্কাপন","language":"ওলন্দাজ"},
+{"text":"টেক্কা","language":"ওলন্দাজ"},
+{"text":"তুরূপ","language":"ওলন্দাজ"},
+{"text":"রুইতন","language":"ওলন্দাজ"},
+{"text":"হরতন","language":"ওলন্দাজ"},
+{"text":"খন্দর","language":"গুজরাটি"},
+{"text":"হরতাল","language":"গুজরাটি"},
+{"text":"চাহিদা","language":"পাঞ্জাবি"},
+{"text":"শিখ","language":"পাঞ্জাবি"},
+{"text":"চাকর","language":"তুর্কি"},
+{"text":"চাকু","language":"তুর্কি"},
+{"text":"তোপ","language":"তুর্কি"},
+{"text":"দারোগা","language":"তুর্কি"},
+{"text":"চা","language":"চীনা"},
+{"text":"চিনি","language":"চীনা"},
+{"text":"ফুঙ্গি","language":"বার্মিজ"},
+{"text":"লুঙ্গি","language":"বার্মিজ"},
+{"text":"রিক্সা","language":"জাপানি"},
+{"text":"হারিকিরি","language":"জাপানি"}
+  ]
+};
 
+// localStorage এ প্রথমবার বসানো
+if(!localStorage.getItem("quizData")){
+  localStorage.setItem("quizData", JSON.stringify(defaultData));
+}
+
+// ---------------- localStorage থেকে লোড -----------------
+let quizData = JSON.parse(localStorage.getItem("quizData"));
+let words = quizData.words;
+let originWords = quizData.originWords;
+
+// ---------- Quiz Functions ----------
+const originOptions = ["চিনা","বার্মিজ","হিন্দি","ইংরেজি","আরবি","ফারসি","পর্তুগিজ"];
+
+let allWords = [...words, ...originWords];
 let currentWordIndex = -1;
 let answered = false;
 
-// ---------------- Utility: Shuffle -----------------
+// Shuffle function
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -53,20 +246,10 @@ function shuffleArray(array) {
   }
   return array;
 }
+shuffleArray(allWords);
 
-// ---------------- Load Next Word -----------------
 function nextWord() {
-  if(!quizData){
-    document.getElementById("word").innerText = "⚠️ এখনো কোনো ডেটা নেই! আগে Admin Panel থেকে শব্দ যোগ করুন।";
-    return;
-  }
-
   answered = false;
-  if(allWords.length === 0){
-    allWords = [...quizData.words, ...quizData.originWords];
-    shuffleArray(allWords);
-  }
-
   currentWordIndex++;
   if(currentWordIndex >= allWords.length){
     alert("সব শব্দ শেষ!");
@@ -81,16 +264,14 @@ function nextWord() {
   btns.forEach(b => b.disabled = false);
 
   let options = [];
-  const correctIndex = Math.floor(Math.random()*4);
+  let correctIndex = Math.floor(Math.random()*4);
 
   if(currentWord.language){
-    // Origin word
     options = originOptions.filter(l => l !== currentWord.language);
     options = shuffleArray(options).slice(0,3);
     options.splice(correctIndex, 0, currentWord.language);
   } else {
-    // Normal word
-    const types = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি","বিদেশি"];
+    const types = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি"];
     options = types.filter(t => t !== currentWord.type);
     options = shuffleArray(options).slice(0,3);
     options.splice(correctIndex, 0, currentWord.type);
@@ -102,29 +283,159 @@ function nextWord() {
   });
 }
 
-// ---------------- Check Answer -----------------
-function checkAnswer(btn) {
+function checkAnswer(btnElement) {
+  const result = document.getElementById("result");
+  const currentWord = allWords[currentWordIndex];
+  const selectedType = btnElement.dataset.type || "";
+
   if(answered){
-    document.getElementById("result").innerText = "⚠️ একাধিক উত্তর গ্রহণযোগ্য নয়";
-    document.getElementById("result").style.color = "orange";
+    result.innerText = "⚠️ একাধিক উত্তর গ্রহণযোগ্য নয়";
+    result.style.color = "orange";
     return;
   }
 
   answered = true;
-  btn.disabled = true;
-  const currentWord = allWords[currentWordIndex];
-  const selectedType = btn.dataset.type;
-  const correctAnswer = currentWord.type || currentWord.language;
+  let correctAnswer = currentWord.type || currentWord.language;
 
   if(selectedType === correctAnswer){
-    document.getElementById("result").innerHTML = `✅ <span style="color:green">সঠিক: ${correctAnswer}</span>`;
+    result.innerHTML = `✅ <span style="color:green">সঠিক: ${correctAnswer}</span>`;
   } else {
-    document.getElementById("result").innerHTML = `❌ ভুল! <span style="color:green">সঠিক: ${correctAnswer}</span>`;
+    result.innerHTML = `❌ ভুল! <span style="color:green">সঠিক: ${correctAnswer}</span>`;
   }
 }
 
-// ---------------- On Load -----------------
-nextWord();
+// ---------- Admin Panel Functions ----------
+function renderWords(){
+  const tbody = document.querySelector("#wordsTable tbody");
+  tbody.innerHTML = "";
+  quizData.words.forEach((w,i)=>{
+    tbody.innerHTML += `<tr>
+      <td>${i+1}</td><td>${w.text}</td><td>${w.type}</td>
+      <td>
+        <button class="btn btn-sm btn-primary" onclick="editWord(${i})">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteWord(${i})">🗑️</button>
+      </td>`;
+  });
+}
+
+function renderOrigin(){
+  const tbody = document.querySelector("#originTable tbody");
+  tbody.innerHTML = "";
+  quizData.originWords.forEach((o,i)=>{
+    tbody.innerHTML += `<tr>
+      <td>${i+1}</td><td>${o.text}</td><td>${o.language}</td>
+      <td>
+        <button class="btn btn-sm btn-primary" onclick="editOrigin(${i})">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteOrigin(${i})">🗑️</button>
+      </td>`;
+  });
+}
+
+function addWord(){
+  const text = document.getElementById("wordText").value.trim();
+  const type = document.getElementById("wordType").value;
+  if(!text) return alert("শব্দ দিন!");
+  quizData.words.push({text, type});
+  saveData(); renderWords(); updateJsonView('words');
+  document.getElementById("wordText").value="";
+}
+
+function editWord(i){
+  const newText = prompt("শব্দ পরিবর্তন করুন:", quizData.words[i].text);
+  if(newText===null) return;
+  const newType = prompt("ধরন পরিবর্তন করুন:", quizData.words[i].type);
+  if(newType===null) return;
+  quizData.words[i] = { text:newText.trim(), type:newType.trim() };
+  saveData(); renderWords(); updateJsonView('words');
+}
+
+function deleteWord(i){
+  if(confirm("ডিলিট করতে চান?")){
+    quizData.words.splice(i,1);
+    saveData(); renderWords(); updateJsonView('words');
+  }
+}
+
+function addOrigin(){
+  const text = document.getElementById("originText").value.trim();
+  const language = document.getElementById("originLang").value.trim();
+  if(!text || !language) return alert("শব্দ ও ভাষা দিন!");
+  quizData.originWords.push({text, language});
+  saveData(); renderOrigin(); updateJsonView('origin');
+  document.getElementById("originText").value="";
+  document.getElementById("originLang").value="";
+}
+
+function editOrigin(i){
+  const newText = prompt("শব্দ পরিবর্তন করুন:", quizData.originWords[i].text);
+  if(newText===null) return;
+  const newLang = prompt("ভাষা পরিবর্তন করুন:", quizData.originWords[i].language);
+  if(newLang===null) return;
+  quizData.originWords[i] = { text:newText.trim(), language:newLang.trim() };
+  saveData(); renderOrigin(); updateJsonView('origin');
+}
+
+function deleteOrigin(i){
+  if(confirm("ডিলিট করতে চান?")){
+    quizData.originWords.splice(i,1);
+    saveData(); renderOrigin(); updateJsonView('origin');
+  }
+}
+
+function resetData(){
+  if(confirm("ডিফল্ট ডাটায় ফিরে যেতে চান?")){
+    quizData = JSON.parse(JSON.stringify(defaultData));
+    saveData(); renderWords(); renderOrigin(); updateJsonView('words'); updateJsonView('origin');
+  }
+}
+
+function saveData(){
+  localStorage.setItem("quizData", JSON.stringify(quizData));
+  words = quizData.words;
+  originWords = quizData.originWords;
+  allWords = [...words, ...originWords];
+}
+
+function toggleJson(type){
+  if(type==='words'){
+    const box = document.getElementById("jsonBoxWords");
+    box.style.display = box.style.display==='none'?'block':'none';
+    updateJsonView('words');
+  } else {
+    const box = document.getElementById("jsonBoxOrigin");
+    box.style.display = box.style.display==='none'?'block':'none';
+    updateJsonView('origin');
+  }
+}
+
+function updateJsonView(type){
+  const arr = type==='words'? quizData.words : quizData.originWords;
+  const lines = arr.map(o => JSON.stringify(o));
+  if(type==='words'){
+    document.getElementById("jsonViewWords").value = lines.join(",\n");
+  } else {
+    document.getElementById("jsonViewOrigin").value = lines.join(",\n");
+  }
+}
+
+// ---------- Section Toggle ----------
+function showQuiz(){
+  document.getElementById("quizSection").style.display="block";
+  document.getElementById("adminPanel").style.display="none";
+}
+
+function showAdmin(){
+  document.getElementById("quizSection").style.display="none";
+  document.getElementById("adminPanel").style.display="block";
+}
+
+// প্রথমবার লোড
+window.onload = ()=>{
+  showQuiz();
+  nextWord();
+  renderWords();
+  renderOrigin();
+};
 </script>
 </body>
 </html>
