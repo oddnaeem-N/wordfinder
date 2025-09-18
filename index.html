@@ -6,76 +6,41 @@
 <title>শব্দ কুইজ MCQ + Origin</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-body {
-  font-family: "Noto Sans Bengali", sans-serif;
-  background: #f8f9fa;
-}
-.quiz-card {
-  max-width: 500px;
-  margin: 30px auto;
-  padding: 25px 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-.word {
-  font-size: 36px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-.result {
-  margin-top: 10px;
-  font-size: 18px;
-  font-weight: 600;
-}
-.btn-group-mcq {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-.btn-group-mcq .btn {
-  width: 100%;
-  min-height: 60px;
-  font-size: 18px;
-}
+body { font-family: "Noto Sans Bengali", sans-serif; background: #f8f9fa; }
+.quiz-card { max-width: 500px; margin: 30px auto; padding: 25px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.word { font-size: 36px; font-weight: bold; margin-bottom: 10px; }
+.result { margin-top: 10px; font-size: 18px; font-weight: 600; }
+.btn-group-mcq { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+.btn-group-mcq .btn { width: 100%; min-height: 60px; font-size: 18px; }
 </style>
 </head>
 <body>
-
 <div class="container">
+  <div class="d-flex justify-content-end my-3">
+    <a href="admin.html" class="btn btn-warning">Admin Panel</a>
+  </div>
 
-  <!-- Quiz Card -->
   <div id="quizCard" class="card quiz-card text-center">
     <div class="card-body">
       <div id="word" class="word">লোড হচ্ছে...</div>
-
       <div class="btn-group-mcq">
         <button class="btn btn-primary" onclick="checkAnswer(this)">A</button>
         <button class="btn btn-success" onclick="checkAnswer(this)">B</button>
         <button class="btn btn-warning" onclick="checkAnswer(this)">C</button>
         <button class="btn btn-danger" onclick="checkAnswer(this)">D</button>
       </div>
-
       <div class="result" id="result"></div>
       <button class="btn btn-secondary mt-3" onclick="nextWord()">পরের শব্দ</button>
     </div>
   </div>
-
-  <!-- Score Card -->
-  <div class="card quiz-card text-center">
-    <div class="card-body">
-      <h5 class="card-title">📊 স্কোর</h5>
-      <p id="score">সঠিক: 0 | ভুল: 0 | মোট: 0</p>
-    </div>
-  </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// শব্দ লিস্ট
-const words = [
-  { text: "চন্দ্র", type: "তৎসম" },
+// ---------------- ডিফল্ট ডেটা -----------------
+const defaultData = {
+  words: [
+      { text: "চন্দ্র", type: "তৎসম" },
   { text: "সূর্য", type: "তৎসম" },
   { text: "নক্ষত্র", type: "তৎসম" },
   { text: "ভবন", type: "তৎসম" },
@@ -99,10 +64,9 @@ const words = [
   { text: "ডাব", type: "দেশি" },
   { text: "ডাগর", type: "দেশি" },
   { text: "ঢেঁকি", type: "দেশি" }
-];
-
-const originWords = [
-  { "text": "আল্লাহ", "language": "আরবি" },
+  ],
+  originWords: [
+{ "text": "আল্লাহ", "language": "আরবি" },
   { "text": "ইসলাম", "language": "আরবি" },
    { "text": "ঈমান", "language": "আরবি" },
   { "text": "ওজু", "language": "আরবি" },
@@ -208,19 +172,19 @@ const originWords = [
   { "text": "লুঙ্গি", "language": "বার্মিজ" },
   { "text": "রিক্সা", "language": "জাপানি" },
   { "text": "হারিকিরি", "language": "জাপানি" }
-];
+  ]
+};
 
-// originWords MCQ অপশন আলাদা
-const originOptions = ["চীনা","বার্মা","হিন্দি","ইংরেজি","আরবি"];
+// ---------------- localStorage থেকে ডেটা লোড -----------------
+let quizData = JSON.parse(localStorage.getItem("quizData")) || defaultData;
 
-let allWords = [...words, ...originWords];
+let allWords = [...quizData.words, ...quizData.originWords];
+const originOptions = ["চিনা","বার্মা","হিন্দি","ইংরেজি","আরবি","তুর্কি","ওলন্দাজ","পাঞ্জাবি"];
+
 let currentWordIndex = -1;
-let correct = 0;
-let wrong = 0;
-let total = 0;
 let answered = false;
 
-// Shuffle
+// ---------------- Utility: Shuffle -----------------
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -230,10 +194,7 @@ function shuffleArray(array) {
 }
 shuffleArray(allWords);
 
-function updateScore() {
-  document.getElementById("score").innerText = `সঠিক: ${correct} | ভুল: ${wrong} | মোট: ${total}`;
-}
-
+// ---------------- Load Next Word -----------------
 function nextWord() {
   answered = false;
   currentWordIndex++;
@@ -250,16 +211,14 @@ function nextWord() {
   btns.forEach(b => b.disabled = false);
 
   let options = [];
-  let correctIndex = Math.floor(Math.random()*4);
+  const correctIndex = Math.floor(Math.random()*4);
 
   if(currentWord.language){
-    // originWords MCQ অপশন
     options = originOptions.filter(l => l !== currentWord.language);
     options = shuffleArray(options).slice(0,3);
     options.splice(correctIndex, 0, currentWord.language);
   } else {
-    // words MCQ
-    const types = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি"];
+    const types = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি","বিদেশি"];
     options = types.filter(t => t !== currentWord.type);
     options = shuffleArray(options).slice(0,3);
     options.splice(correctIndex, 0, currentWord.type);
@@ -271,36 +230,28 @@ function nextWord() {
   });
 }
 
-function checkAnswer(btnElement) {
-  const result = document.getElementById("result");
-  const currentWord = allWords[currentWordIndex];
-  const selectedType = btnElement.dataset.type || "";
-
+// ---------------- Check Answer -----------------
+function checkAnswer(btn) {
   if(answered){
-    result.innerText = "⚠️ একাধিক উত্তর গ্রহণযোগ্য নয়";
-    result.style.color = "orange";
+    document.getElementById("result").innerText = "⚠️ একাধিক উত্তর গ্রহণযোগ্য নয়";
+    document.getElementById("result").style.color = "orange";
     return;
   }
 
   answered = true;
-  btnElement.disabled = true;
-  total++;
-
-  let correctAnswer = currentWord.type || currentWord.language;
+  btn.disabled = true;
+  const currentWord = allWords[currentWordIndex];
+  const selectedType = btn.dataset.type;
+  const correctAnswer = currentWord.type || currentWord.language;
 
   if(selectedType === correctAnswer){
-    correct++;
-    result.innerHTML = `✅ <span style="color:green">সঠিক: ${correctAnswer}</span>`;
+    document.getElementById("result").innerHTML = `✅ <span style="color:green">সঠিক: ${correctAnswer}</span>`;
   } else {
-    wrong++;
-    result.innerHTML = `❌ ভুল! <span style="color:green">সঠিক: ${correctAnswer}</span>`;
+    document.getElementById("result").innerHTML = `❌ ভুল! <span style="color:green">সঠিক: ${correctAnswer}</span>`;
   }
-
-  updateScore();
 }
 
 // প্রথম শব্দ লোড
-updateScore();
 nextWord();
 </script>
 </body>

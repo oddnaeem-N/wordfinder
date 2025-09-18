@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Admin Panel (CRUD + JSON Copy)</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body { background: #f8f9fa; font-family: "Noto Sans Bengali", sans-serif; }
+.container { max-width: 900px; margin-top: 30px; }
+h3 { margin-top: 30px; }
+.table td, .table th { vertical-align: middle; }
+.jsonBox { display:none; margin-top:20px; }
+textarea { font-family: monospace; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="d-flex justify-content-end my-3">
+    <a href="index.html" class="btn btn-primary">Quiz Page</a>
+  </div>
+
+  <h2 class="mb-4">📑 কুইজ ডাটা এডমিন (CRUD + JSON Copy)</h2>
+
+  <!-- Words Section -->
+  <h3>Words (তৎসম / তদ্ভব / অর্ধ-তৎসম / দেশি)</h3>
+  <table class="table table-bordered table-striped" id="wordsTable">
+    <thead class="table-dark">
+      <tr><th>#</th><th>শব্দ</th><th>ধরন</th><th>অ্যাকশন</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div class="row g-2 mb-3">
+    <div class="col-md-6"><input id="wordText" class="form-control" placeholder="শব্দ"></div>
+    <div class="col-md-4">
+      <select id="wordType" class="form-select">
+        <option value="তৎসম">তৎসম</option>
+        <option value="তদ্ভব">তদ্ভব</option>
+        <option value="অর্ধ-তৎসম">অর্ধ-তৎসম</option>
+        <option value="দেশি">দেশি</option>
+      </select>
+    </div>
+    <div class="col-md-2 d-grid"><button class="btn btn-success" onclick="addWord()">➕ যোগ</button></div>
+  </div>
+  <button class="btn btn-info mb-3" onclick="toggleJson('words')">📄 View Words JSON</button>
+
+  <!-- Origin Words Section -->
+  <h3>Origin Words</h3>
+  <table class="table table-bordered table-striped" id="originTable">
+    <thead class="table-dark">
+      <tr><th>#</th><th>শব্দ</th><th>ভাষা</th><th>অ্যাকশন</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div class="row g-2 mb-3">
+    <div class="col-md-6"><input id="originText" class="form-control" placeholder="শব্দ"></div>
+    <div class="col-md-4"><input id="originLang" class="form-control" placeholder="ভাষা (যেমন: আরবি, ফারসি, ইংরেজি)"></div>
+    <div class="col-md-2 d-grid"><button class="btn btn-success" onclick="addOrigin()">➕ যোগ</button></div>
+  </div>
+  <button class="btn btn-info mb-3" onclick="toggleJson('origin')">📄 View Origin Words JSON</button>
+
+  <!-- JSON Viewer -->
+  <div id="jsonBoxWords" class="jsonBox">
+    <label class="fw-bold mt-3">Words JSON (copy only):</label>
+    <textarea id="jsonViewWords" class="form-control" rows="10" readonly></textarea>
+  </div>
+  <div id="jsonBoxOrigin" class="jsonBox">
+    <label class="fw-bold mt-3">Origin Words JSON (copy only):</label>
+    <textarea id="jsonViewOrigin" class="form-control" rows="10" readonly></textarea>
+  </div>
+</div>
+
+<script>
+// ---------------- ডিফল্ট ডেটা -----------------
+const defaultData = {
+  words: [
+    { text: "চন্দ্র", type: "তৎসম" },
+    { text: "সূর্য", type: "তৎসম" },
+    { text: "হাত", type: "তদ্ভব" }
+  ],
+  originWords: [
+    { text: "আল্লাহ", language: "আরবি" },
+    { text: "খোদা", language: "ফারসি" }
+  ]
+};
+
+// ---------------- localStorage থেকে ডেটা লোড -----------------
+let quizData = JSON.parse(localStorage.getItem("quizData")) || JSON.parse(JSON.stringify(defaultData));
+
+// ---------------- Render Functions -----------------
+function renderWords(){
+  const tbody = document.querySelector("#wordsTable tbody");
+  tbody.innerHTML = "";
+  quizData.words.forEach((w,i)=>{
+    tbody.innerHTML += `<tr>
+      <td>${i+1}</td><td>${w.text}</td><td>${w.type}</td>
+      <td>
+        <button class="btn btn-sm btn-primary" onclick="editWord(${i})">✏️ Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteWord(${i})">🗑️ Delete</button>
+      </td>
+    </tr>`;
+  });
+}
+
+function renderOrigin(){
+  const tbody = document.querySelector("#originTable tbody");
+  tbody.innerHTML = "";
+  quizData.originWords.forEach((o,i)=>{
+    tbody.innerHTML += `<tr>
+      <td>${i+1}</td><td>${o.text}</td><td>${o.language}</td>
+      <td>
+        <button class="btn btn-sm btn-primary" onclick="editOrigin(${i})">✏️ Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteOrigin(${i})">🗑️ Delete</button>
+      </td>
+    </tr>`;
+  });
+}
+
+// ---------------- CRUD Functions -----------------
+function saveData(){ localStorage.setItem("quizData", JSON.stringify(quizData)); }
+
+// Words
+function addWord(){
+  const text = document.getElementById("wordText").value.trim();
+  const type = document.getElementById("wordType").value;
+  if(!text) return alert("শব্দ দিন!");
+  quizData.words.push({text, type});
+  saveData(); renderWords(); updateJsonView('words');
+  document.getElementById("wordText").value="";
+}
+
+function editWord(i){
+  const newText = prompt("শব্দ পরিবর্তন করুন:", quizData.words[i].text);
+  if(newText===null) return;
+  const newType = prompt("ধরন পরিবর্তন করুন:", quizData.words[i].type);
+  if(newType===null) return;
+  quizData.words[i] = { text:newText.trim(), type:newType.trim() };
+  saveData(); renderWords(); updateJsonView('words');
+}
+
+function deleteWord(i){
+  if(confirm("ডিলিট করতে চান?")){
+    quizData.words.splice(i,1);
+    saveData(); renderWords(); updateJsonView('words');
+  }
+}
+
+// Origin Words
+function addOrigin(){
+  const text = document.getElementById("originText").value.trim();
+  const language = document.getElementById("originLang").value.trim();
+  if(!text || !language) return alert("শব্দ ও ভাষা দিন!");
+  quizData.originWords.push({text, language});
+  saveData(); renderOrigin(); updateJsonView('origin');
+  document.getElementById("originText").value="";
+  document.getElementById("originLang").value="";
+}
+
+function editOrigin(i){
+  const newText = prompt("শব্দ পরিবর্তন করুন:", quizData.originWords[i].text);
+  if(newText===null) return;
+  const newLang = prompt("ভাষা পরিবর্তন করুন:", quizData.originWords[i].language);
+  if(newLang===null) return;
+  quizData.originWords[i] = { text:newText.trim(), language:newLang.trim() };
+  saveData(); renderOrigin(); updateJsonView('origin');
+}
+
+function deleteOrigin(i){
+  if(confirm("ডিলিট করতে চান?")){
+    quizData.originWords.splice(i,1);
+    saveData(); renderOrigin(); updateJsonView('origin');
+  }
+}
+
+// ---------------- JSON Viewer -----------------
+function toggleJson(type){
+  const box = type==='words'? document.getElementById("jsonBoxWords") : document.getElementById("jsonBoxOrigin");
+  box.style.display = box.style.display==='none'?'block':'none';
+  updateJsonView(type);
+}
+
+function updateJsonView(type){
+  const arr = type==='words'? quizData.words : quizData.originWords;
+  const lines = arr.map(o => JSON.stringify(o));
+  if(type==='words') document.getElementById("jsonViewWords").value = lines.join(",\n");
+  else document.getElementById("jsonViewOrigin").value = lines.join(",\n");
+}
+
+// ---------------- On Load -----------------
+window.onload = ()=>{
+  renderWords();
+  renderOrigin();
+};
+</script>
+</body>
+</html>
