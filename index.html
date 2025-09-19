@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>শব্দ কুইজ + অ্যাডমিন</title>
+<title>Word Finder</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body { font-family: "Noto Sans Bengali", sans-serif; background: #f8f9fa; }
@@ -13,8 +13,6 @@ body { font-family: "Noto Sans Bengali", sans-serif; background: #f8f9fa; }
 .btn-group-mcq { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
 .btn-group-mcq .btn { width: 100%; min-height: 60px; font-size: 18px; }
 .admin-panel { display:none; margin-top:40px; }
-.table td, .table th { vertical-align: middle; }
-.jsonBox { display:none; margin-top:20px; }
 textarea { font-family: monospace; }
 .correct { border: 2px solid green !important; }
 .wrong { border: 2px solid red !important; }
@@ -24,13 +22,13 @@ textarea { font-family: monospace; }
 
 <div class="container">
 
-  <!-- Toggle Buttons -->
+  <!-- Toggle -->
   <div class="text-end mt-3">
-    <button id="quizBtn" class="btn btn-primary" onclick="showQuiz()">🎮 কুইজ</button>
-    <button id="adminBtn" class="btn btn-dark" onclick="showAdmin()">⚙️ অ্যাডমিন</button>
+    <button class="btn btn-primary" onclick="showQuiz()">🎮 কুইজ</button>
+    <button class="btn btn-dark" onclick="showAdmin()">⚙️ অ্যাডমিন</button>
   </div>
 
-  <!-- Quiz Section -->
+  <!-- Quiz -->
   <div id="quizSection">
     <div class="card quiz-card text-center">
       <div class="card-body">
@@ -49,156 +47,103 @@ textarea { font-family: monospace; }
     </div>
   </div>
 
-  <!-- Admin Panel -->
+  <!-- Admin -->
   <div id="adminPanel" class="admin-panel">
-    <h2 class="mb-4">🧩 শব্দের ডেটাবেজ</h2>
-
-    <button class="btn btn-info mb-3" onclick="toggleJson('words')">📄 Words JSON</button>
-    <button class="btn btn-info mb-3" onclick="toggleJson('origin')">📄 Origin Words JSON</button>
-
-    <div id="jsonBoxWords" class="jsonBox">
-      <label class="fw-bold mt-3">Words JSON (copy only):</label>
+    <h3>🧩 JSON ডেটা</h3>
+    <button class="btn btn-info mb-2" onclick="toggleJson('words')">Words JSON</button>
+    <button class="btn btn-info mb-2" onclick="toggleJson('origin')">Origin Words JSON</button>
+    <div id="jsonWords" style="display:none;">
       <textarea id="jsonViewWords" class="form-control" rows="10" readonly></textarea>
     </div>
-    <div id="jsonBoxOrigin" class="jsonBox">
-      <label class="fw-bold mt-3">Origin Words JSON (copy only):</label>
+    <div id="jsonOrigin" style="display:none;">
       <textarea id="jsonViewOrigin" class="form-control" rows="10" readonly></textarea>
     </div>
   </div>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-let words = [];
-let originWords = [];
-let allWords = [];
-let currentWordIndex = -1;
-let answered = false;
-
+let words = [], originWords = [], allWords = [], currentWordIndex=-1, answered=false;
 const originOptions = ["চিনা","বার্মিজ","হিন্দি","ইংরেজি","আরবি","ফারসি","পর্তুগিজ","ফরাসি","তুর্কি"];
 
 async function loadData() {
-  const wordsResp = await fetch('DB1.json');
-  words = await wordsResp.json();
-
-  const originResp = await fetch('DB2.json');
-  originWords = await originResp.json();
-
-  resetAllWords();
-  nextWord();
+  const w = await fetch('DB1.json').then(res=>res.json());
+  const o = await fetch('DB2.json').then(res=>res.json());
+  words = w; originWords = o;
+  resetAllWords(); nextWord();
 }
 
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+function resetAllWords() {
+  allWords = [...words, ...originWords];
+  shuffle(allWords);
+  currentWordIndex = -1;
+}
+
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    let j=Math.floor(Math.random()*(i+1));
     [array[i], array[j]] = [array[j], array[i]];
   }
   return array;
 }
 
-function resetAllWords(){
-  allWords = [...words, ...originWords];
-  shuffleArray(allWords);
-  currentWordIndex = -1;
-}
-
-function nextWord() {
-  answered = false;
+function nextWord(){
+  answered=false;
   currentWordIndex++;
-  if (currentWordIndex >= allWords.length) {
-    alert("সব শব্দ শেষ!");
-    return;
-  }
+  if(currentWordIndex >= allWords.length){ alert("সব শব্দ শেষ!"); return; }
 
-  const currentWord = allWords[currentWordIndex];
-  document.getElementById("word").innerText = currentWord.text || "";
-  const resultEl = document.getElementById("result");
-  resultEl.innerText = "";
-  resultEl.style.color = "";
+  const w = allWords[currentWordIndex];
+  document.getElementById("word").innerText = w.text;
+  document.getElementById("result").innerText = "";
 
   const btns = document.querySelectorAll(".btn-group-mcq .btn");
-  btns.forEach(b => {
-    b.disabled = false;
-    delete b.dataset.type;
-    b.classList.remove("correct", "wrong");
-  });
+  btns.forEach(b=>{ b.disabled=false; b.classList.remove("correct","wrong"); delete b.dataset.type; });
 
-  let options = [];
-  let correctIndex = Math.floor(Math.random() * 4);
-
-  if (currentWord.hasOwnProperty('language') && currentWord.language) {
-    const other = originOptions.filter(l => l !== currentWord.language);
-    options = shuffleArray(other).slice(0, 3);
-    options.splice(correctIndex, 0, currentWord.language);
+  let options=[], correctIndex=Math.floor(Math.random()*4);
+  if(w.language){
+    let other = originOptions.filter(l=>l!==w.language);
+    options = shuffle(other).slice(0,3);
+    options.splice(correctIndex,0,w.language);
   } else {
-    const types = ["তৎসম", "তদ্ভব", "অর্ধ-তৎসম", "দেশি"];
-    const other = types.filter(t => t !== currentWord.type);
-    options = shuffleArray(other).slice(0, 3);
-    options.splice(correctIndex, 0, currentWord.type);
+    let types = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি"];
+    let other = types.filter(t=>t!==w.type);
+    options = shuffle(other).slice(0,3);
+    options.splice(correctIndex,0,w.type);
   }
 
-  btns.forEach((btn, i) => {
-    btn.dataset.type = options[i];
-    btn.innerText = String.fromCharCode(65 + i) + ". " + options[i];
-  });
+  btns.forEach((b,i)=>{ b.dataset.type=options[i]; b.innerText=String.fromCharCode(65+i)+". "+options[i]; });
 }
 
-function checkAnswer(btnElement) {
-  const result = document.getElementById("result");
-  const currentWord = allWords[currentWordIndex];
-
-  if (!currentWord) {
-    result.textContent = "কোনো শব্দ পাওয়া যায়নি।";
-    return;
-  }
-
-  if (answered) {
-    result.innerText = "⚠️ একাধিক উত্তর গ্রহণযোগ্য নয়";
-    result.style.color = "orange";
-    return;
-  }
-
-  const selectedType = (btnElement.dataset.type || "").trim();
-  const correctAnswer = ((currentWord.type && currentWord.type.trim()) ||
-                         (currentWord.language && currentWord.language.trim()) || "").trim();
-
-  answered = true;
-
-  if (selectedType === correctAnswer) {
-    result.innerHTML = `✅ <span style="color:green">সঠিক: ${correctAnswer}</span>`;
-    btnElement.classList.add("correct");
+function checkAnswer(btn){
+  if(answered){ document.getElementById("result").innerText="⚠️ একাধিক উত্তর গ্রহণযোগ্য নয়"; return; }
+  answered=true;
+  const w = allWords[currentWordIndex];
+  const correct = w.type || w.language;
+  if(btn.dataset.type===correct){
+    document.getElementById("result").innerHTML=`✅ <span style="color:green">সঠিক: ${correct}</span>`;
+    btn.classList.add("correct");
   } else {
-    result.innerHTML = `❌ ভুল! <span style="color:green">সঠিক: ${correctAnswer}</span>`;
-    btnElement.classList.add("wrong");
+    document.getElementById("result").innerHTML=`❌ ভুল! <span style="color:green">সঠিক: ${correct}</span>`;
+    btn.classList.add("wrong");
   }
-
-  document.querySelectorAll(".btn-group-mcq .btn").forEach(b => b.disabled = true);
+  document.querySelectorAll(".btn-group-mcq .btn").forEach(b=>b.disabled=true);
 }
 
 function toggleJson(type){
   if(type==='words'){
-    const box = document.getElementById("jsonBoxWords");
+    const box=document.getElementById("jsonWords");
     box.style.display = box.style.display==='none'?'block':'none';
-    document.getElementById("jsonViewWords").value = JSON.stringify(words, null, 2);
+    document.getElementById("jsonViewWords").value=JSON.stringify(words,null,2);
   } else {
-    const box = document.getElementById("jsonBoxOrigin");
+    const box=document.getElementById("jsonOrigin");
     box.style.display = box.style.display==='none'?'block':'none';
-    document.getElementById("jsonViewOrigin").value = JSON.stringify(originWords, null, 2);
+    document.getElementById("jsonViewOrigin").value=JSON.stringify(originWords,null,2);
   }
 }
 
-function showQuiz(){
-  document.getElementById("quizSection").style.display="block";
-  document.getElementById("adminPanel").style.display="none";
-}
+function showQuiz(){ document.getElementById("quizSection").style.display="block"; document.getElementById("adminPanel").style.display="none"; }
+function showAdmin(){ document.getElementById("quizSection").style.display="none"; document.getElementById("adminPanel").style.display="block"; }
 
-function showAdmin(){
-  document.getElementById("quizSection").style.display="none";
-  document.getElementById("adminPanel").style.display="block";
-}
-
-// --- init ---
 window.onload = loadData;
 </script>
 </body>
