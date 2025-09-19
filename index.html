@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Word Finder</title>
+<title>শব্দ কুইজ + অ্যাডমিন</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body { font-family: "Noto Sans Bengali", sans-serif; background: #f8f9fa; }
@@ -63,51 +63,65 @@ textarea { font-family: monospace; }
 </div>
 
 <script>
-let words = [], originWords = [], allWords = [], currentWordIndex=-1, answered=false;
+// ================== JSON ডেটা ==================
+const words = [
+  {"text":"চন্দ্র","type":"তৎসম"},
+  {"text":"সূর্য","type":"তৎসম"},
+  {"text":"নক্ষত্র","type":"তৎসম"},
+  {"text":"হাত","type":"তদ্ভব"},
+  {"text":"ভবন","type":"তৎসম"},
+  {"text":"জ্যোছনা","type":"অর্ধ-তৎসম"},
+  {"text":"ডাব","type":"দেশি"}
+];
+
+const originWords = [
+  {"text":"কলম","language":"আরবি"},
+  {"text":"নামাজ","language":"ফারসি"},
+  {"text":"ইউনিভার্সিটি","language":"ইংরেজি"},
+  {"text":"আনারস","language":"পর্তুগিজ"}
+];
+
+let allWords = [], currentWordIndex=-1, answered=false;
 const originOptions = ["চিনা","বার্মিজ","হিন্দি","ইংরেজি","আরবি","ফারসি","পর্তুগিজ","ফরাসি","তুর্কি"];
 
-async function loadData() {
-  const w = await fetch('DB1.json').then(res=>res.json());
-  const o = await fetch('DB2.json').then(res=>res.json());
-  words = w; originWords = o;
-  resetAllWords(); nextWord();
+// ================== Helper ==================
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    let j=Math.floor(Math.random()*(i+1));
+    [arr[i], arr[j]]=[arr[j], arr[i]];
+  }
+  return arr;
 }
 
-function resetAllWords() {
+function resetAllWords(){
   allWords = [...words, ...originWords];
   shuffle(allWords);
-  currentWordIndex = -1;
+  currentWordIndex=-1;
 }
 
-function shuffle(array){
-  for(let i=array.length-1;i>0;i--){
-    let j=Math.floor(Math.random()*(i+1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
+// ================== Quiz ==================
 function nextWord(){
   answered=false;
   currentWordIndex++;
-  if(currentWordIndex >= allWords.length){ alert("সব শব্দ শেষ!"); return; }
+  if(currentWordIndex>=allWords.length){ alert("সব শব্দ শেষ!"); return; }
 
   const w = allWords[currentWordIndex];
-  document.getElementById("word").innerText = w.text;
-  document.getElementById("result").innerText = "";
+  document.getElementById("word").innerText=w.text;
+  document.getElementById("result").innerText="";
 
-  const btns = document.querySelectorAll(".btn-group-mcq .btn");
+  const btns=document.querySelectorAll(".btn-group-mcq .btn");
   btns.forEach(b=>{ b.disabled=false; b.classList.remove("correct","wrong"); delete b.dataset.type; });
 
   let options=[], correctIndex=Math.floor(Math.random()*4);
+
   if(w.language){
-    let other = originOptions.filter(l=>l!==w.language);
-    options = shuffle(other).slice(0,3);
+    let other=originOptions.filter(l=>l!==w.language);
+    options=shuffle(other).slice(0,3);
     options.splice(correctIndex,0,w.language);
   } else {
-    let types = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি"];
-    let other = types.filter(t=>t!==w.type);
-    options = shuffle(other).slice(0,3);
+    let types=["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি"];
+    let other=types.filter(t=>t!==w.type);
+    options=shuffle(other).slice(0,3);
     options.splice(correctIndex,0,w.type);
   }
 
@@ -117,8 +131,8 @@ function nextWord(){
 function checkAnswer(btn){
   if(answered){ document.getElementById("result").innerText="⚠️ একাধিক উত্তর গ্রহণযোগ্য নয়"; return; }
   answered=true;
-  const w = allWords[currentWordIndex];
-  const correct = w.type || w.language;
+  const w=allWords[currentWordIndex];
+  const correct=w.type || w.language;
   if(btn.dataset.type===correct){
     document.getElementById("result").innerHTML=`✅ <span style="color:green">সঠিক: ${correct}</span>`;
     btn.classList.add("correct");
@@ -129,6 +143,7 @@ function checkAnswer(btn){
   document.querySelectorAll(".btn-group-mcq .btn").forEach(b=>b.disabled=true);
 }
 
+// ================== Admin ==================
 function toggleJson(type){
   if(type==='words'){
     const box=document.getElementById("jsonWords");
@@ -141,10 +156,16 @@ function toggleJson(type){
   }
 }
 
+// ================== Section Toggle ==================
 function showQuiz(){ document.getElementById("quizSection").style.display="block"; document.getElementById("adminPanel").style.display="none"; }
 function showAdmin(){ document.getElementById("quizSection").style.display="none"; document.getElementById("adminPanel").style.display="block"; }
 
-window.onload = loadData;
+// ================== Init ==================
+window.onload=()=>{
+  resetAllWords();
+  showQuiz();
+  nextWord();
+};
 </script>
 </body>
 </html>
