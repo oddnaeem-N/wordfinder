@@ -49,48 +49,13 @@ textarea { font-family: monospace; }
     </div>
   </div>
 
-  <!-- ================= Admin Panel ================= -->
+  <!-- Admin Panel -->
   <div id="adminPanel" class="admin-panel">
     <h2 class="mb-4">🧩 শব্দের ডেটাবেজ</h2>
-    <button class="btn btn-danger mb-4" onclick="resetData()">♻️ Default</button>
 
-    <!-- Words Section -->
-    <h3>Words </h3>
-    <table class="table table-bordered table-striped" id="wordsTable">
-      <thead class="table-dark">
-        <tr><th>#</th><th>শব্দ</th><th>ধরন</th><th>অ্যাকশন</th></tr>
-      </thead><tbody></tbody>
-    </table>
-    <div class="row g-2 mb-3">
-      <div class="col-md-6"><input id="wordText" class="form-control" placeholder="শব্দ"></div>
-      <div class="col-md-4">
-        <select id="wordType" class="form-select">
-          <option value="তৎসম">তৎসম</option>
-          <option value="তদ্ভব">তদ্ভব</option>
-          <option value="অর্ধ-তৎসম">অর্ধ-তৎসম</option>
-          <option value="দেশি">দেশি</option>
-          <option value="বিদেশি">বিদেশি</option>
-        </select>
-      </div>
-      <div class="col-md-2 d-grid"><button class="btn btn-success" onclick="addWord()"> যোগ</button></div>
-    </div>
-    <button class="btn btn-info mb-3" onclick="toggleJson('words')">📄</button>
+    <button class="btn btn-info mb-3" onclick="toggleJson('words')">📄 Words JSON</button>
+    <button class="btn btn-info mb-3" onclick="toggleJson('origin')">📄 Origin Words JSON</button>
 
-    <!-- Origin Words Section -->
-    <h3>Origin Words</h3>
-    <table class="table table-bordered table-striped" id="originTable">
-      <thead class="table-dark">
-        <tr><th>#</th><th>শব্দ</th><th>ভাষা</th><th>অ্যাকশন</th></tr>
-      </thead><tbody></tbody>
-    </table>
-    <div class="row g-2 mb-3">
-      <div class="col-md-6"><input id="originText" class="form-control" placeholder="শব্দ"></div>
-      <div class="col-md-4"><input id="originLang" class="form-control" placeholder="ভাষা (যেমন: আরবি, ফারসি, ইংরেজি)"></div>
-      <div class="col-md-2 d-grid"><button class="btn btn-success" onclick="addOrigin()"> যোগ</button></div>
-    </div>
-    <button class="btn btn-info mb-3" onclick="toggleJson('origin')">📄</button>
-
-    <!-- JSON Viewer -->
     <div id="jsonBoxWords" class="jsonBox">
       <label class="fw-bold mt-3">Words JSON (copy only):</label>
       <textarea id="jsonViewWords" class="form-control" rows="10" readonly></textarea>
@@ -100,193 +65,30 @@ textarea { font-family: monospace; }
       <textarea id="jsonViewOrigin" class="form-control" rows="10" readonly></textarea>
     </div>
   </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// ---------------- ডিফল্ট ডেটা -----------------
-const defaultData = {
-  words: [
-    {"text":"চন্দ্র","type":"তৎসম"},
-{"text":"সূর্য","type":"তৎসম"},
-{"text":"নক্ষত্র","type":"তৎসম"},
-{"text":"ভবন","type":"তৎসম"},
-{"text":"ধর্ম","type":"তৎসম"},
-{"text":"পাত্র","type":"তৎসম"},
-{"text":"মনুষ্য","type":"তৎসম"},
-{"text":"হস্ত","type":"তৎসম"},
-{"text":"হাত","type":"তদ্ভব"},
-{"text":"চর্মকার","type":"তৎসম"},
-{"text":"চামার","type":"তদ্ভব"},
-{"text":"জ্যোছনা","type":"অর্ধ-তৎসম"},
-{"text":"ছেরাদ্দ","type":"অর্ধ-তৎসম"},
-{"text":"গিন্নী","type":"অর্ধ-তৎসম"},
-{"text":"বোষ্টম","type":"অর্ধ-তৎসম"},
-{"text":"কুচ্ছিত","type":"অর্ধ-তৎসম"},
-{"text":"জ্যোৎস্না","type":"তৎসম"},
-{"text":"শ্রাদ্ধ","type":"তৎসম"},
-{"text":"গৃহিণী","type":"তৎসম"},
-{"text":"বৈষ্ণব","type":"তৎসম"},
-{"text":"কুৎসিত","type":"তৎসম"},
-{"text":"কুলা","type":"দেশি"},
-{"text":"গঞ্জ","type":"দেশি"},
-{"text":"চোঙ্গা","type":"দেশি"},
-{"text":"টোপর","type":"দেশি"},
-{"text":"ডাব","type":"দেশি"},
-{"text":"ডাগর","type":"দেশি"},
-{"text":"ঢেঁকি","type":"দেশি"},
-{"text":"তণ্ডুল","type":"তৎসম"},
-{"text":"চাণক্য","type":"তৎসম"},
-{"text":"মাণিক্য","type":"তৎসম"},
-{"text":"ঋণ","type":"তৎসম"},
-{"text":"তৃণ","type":"তৎসম"},
-{"text":"মানুষ","type":"তৎসম"},
-{"text":"পাষাণ","type":"তৎসম"},
-{"text":"দুঃখ","type":"তৎসম"},
-{"text":"নদী","type":"তৎসম"},
-{"text":"চিহ্ন","type":"তৎসম"},
-{"text":"অপরাহ্ণ","type":"তৎসম"},
-{"text":"বধূ","type":"তৎসম"},
-{"text":"চক্ষু","type":"তৎসম"},
-{"text":"বক্ষ","type":"তৎসম"},
-{"text":"শিক্ষা","type":"তৎসম"},
-{"text":"যক্ষ্মা","type":"তৎসম"},
-{"text":"তীক্ষ্ণ","type":"তৎসম"},
-{"text":"প্রভাব","type":"তৎসম"},
-{"text":"পরাজয়","type":"তৎসম"},
-{"text":"অপমান","type":"তৎসম"},
-{"text":"সমৃদ্ধ","type":"তৎসম"},
-{"text":"দুঃস্থ","type":"তৎসম"},
-{"text":"মনঃকষ্ট","type":"তৎসম"},
-{"text":"শিরঃপীড়া","type":"তৎসম"},
-{"text":"কারক","type":"তৎসম"},
-{"text":"শ্রবণ","type":"তৎসম"},
-{"text":"সাহিত্যিক","type":"তৎসম"},
-{"text":"হৈমন্তিক","type":"তৎসম"},
-{"text":"পত্র","type":"তৎসম"},
-{"text":"সোনা","type":"অর্ধ-তৎসম"},
-{"text":"বিষ্টি","type":"অর্ধ-তৎসম"},
-{"text":"সুরুজ","type":"অর্ধ-তৎসম"},
-{"text":"নেমন্তন্ন","type":"অর্ধ-তৎসম"},
-{"text":"পরান","type":"অর্ধ-তৎসম"},
-{"text":"ঝরনা","type":"অর্ধ-তৎসম"},
-{"text":"তারা","type":"অর্ধ-তৎসম"},
-{"text":"জারুল","type":"দেশি"},
-{"text":"ঢোল","type":"দেশি"},
-{"text":"ডোলা","type":"দেশি"},
-{"text":"জলপাই","type":"দেশি"},
-{"text":"পেট (উদর)","type":"দেশি (তামিল)"},
-{"text":"চুলা (উনুন)","type":"দেশি (মুণ্ডারি)"},
-{"text":"কুড়ি (বিশ)","type":"দেশি (কোল)"},
-{"text":"ডিঙ্গি","type":"দেশি"},
-{"text":"ডাল","type":"দেশি"},
-{"text":"চাল","type":"দেশি"}
-  ],
-  originWords: [
-   {"text":"কানুন","language":"আরবি"},
-{"text":"কলম","language":"আরবি"},
-{"text":"কিতাব","language":"আরবি"},
-{"text":"কেচ্ছা","language":"আরবি"},
-{"text":"নগদ","language":"আরবি"},
-{"text":"বাকি","language":"আরবি"},
-{"text":"মহকুমা","language":"আরবি"},
-{"text":"মুন্সেফ","language":"আরবি"},
-{"text":"মোক্তার","language":"আরবি"},
-{"text":"খোদা","language":"ফারসি"},
-{"text":"গুনাহ","language":"ফারসি"},
-{"text":"নামাজ","language":"ফারসি"},
-{"text":"পয়গম্বর","language":"ফারসি"},
-{"text":"ফেরেশতা","language":"ফারসি"},
-{"text":"বেহেশত","language":"ফারসি"},
-{"text":"রোজা","language":"ফারসি"},
-{"text":"কারখানা","language":"ফারসি"},
-{"text":"চশমা","language":"ফারসি"},
-{"text":"জবানবন্দি","language":"ফারসি"},
-{"text":"তারিখ","language":"ফারসি"},
-{"text":"তোশক","language":"ফারসি"},
-{"text":"দফতর","language":"ফারসি"},
-{"text":"দোকান","language":"ফারসি"},
-{"text":"দস্তখত","language":"ফারসি"},
-{"text":"দৌলত","language":"ফারসি"},
-{"text":"বাদশাহ","language":"ফারসি"},
-{"text":"বেগম","language":"ফারসি"},
-{"text":"মেথর","language":"ফারসি"},
-{"text":"আদমি","language":"ফারসি"},
-{"text":"আমদানি","language":"ফারসি"},
-{"text":"জানোয়ার","language":"ফারসি"},
-{"text":"জিন্দা","language":"ফারসি"},
-{"text":"নমুনা","language":"ফারসি"},
-{"text":"বদমাশ","language":"ফারসি"},
-{"text":"রফতানি","language":"ফারসি"},
-{"text":"হাঙ্গামা","language":"ফারসি"},
-{"text":"ইউনিভার্সিটি","language":"ইংরেজি"},
-{"text":"ইউনিয়ন","language":"ইংরেজি"},
-{"text":"কলেজ","language":"ইংরেজি"},
-{"text":"টিন","language":"ইংরেজি"},
-{"text":"নভেল","language":"ইংরেজি"},
-{"text":"নোট","language":"ইংরেজি"},
-{"text":"পাউডার","language":"ইংরেজি"},
-{"text":"পেন্সিল","language":"ইংরেজি"},
-{"text":"ব্যাগ","language":"ইংরেজি"},
-{"text":"ফুটবল","language":"ইংরেজি"},
-{"text":"মাস্টার","language":"ইংরেজি"},
-{"text":"লাইব্রেরি","language":"ইংরেজি"},
-{"text":"স্কুল","language":"ইংরেজি"},
-{"text":"আফিম","language":"ইংরেজি"},
-{"text":"অফিস","language":"ইংরেজি"},
-{"text":"ইস্কুল","language":"ইংরেজি"},
-{"text":"বাক্স","language":"ইংরেজি"},
-{"text":"হাসপাতাল","language":"ইংরেজি"},
-{"text":"বোতল","language":"ইংরেজি"},
-{"text":"আনারস","language":"পর্তুগিজ"},
-{"text":"আলপিন","language":"পর্তুগিজ"},
-{"text":"আলমারি","language":"পর্তুগিজ"},
-{"text":"গির্জা","language":"পর্তুগিজ"},
-{"text":"গুদাম","language":"পর্তুগিজ"},
-{"text":"চাবি","language":"পর্তুগিজ"},
-{"text":"পাউরুটি","language":"পর্তুগিজ"},
-{"text":"পাদ্রি","language":"পর্তুগিজ"},
-{"text":"বালতি","language":"পর্তুগিজ"},
-{"text":"কার্তুজ","language":"ফরাসি"},
-{"text":"কুপন","language":"ফরাসি"},
-{"text":"ডিপো","language":"ফরাসি"},
-{"text":"রেস্তোরাঁ","language":"ফরাসি"},
-{"text":"ইস্কাপন","language":"ওলন্দাজ"},
-{"text":"টেক্কা","language":"ওলন্দাজ"},
-{"text":"তুরূপ","language":"ওলন্দাজ"},
-{"text":"রুইতন","language":"ওলন্দাজ"},
-{"text":"হরতন","language":"ওলন্দাজ"},
-{"text":"খন্দর","language":"গুজরাটি"},
-{"text":"হরতাল","language":"গুজরাটি"},
-{"text":"চাহিদা","language":"পাঞ্জাবি"},
-{"text":"শিখ","language":"পাঞ্জাবি"},
-{"text":"চাকর","language":"তুর্কি"},
-{"text":"চাকু","language":"তুর্কি"},
-{"text":"তোপ","language":"তুর্কি"},
-{"text":"দারোগা","language":"তুর্কি"},
-{"text":"রিক্সা","language":"জাপানি"},
-{"text":"হারিকিরি","language":"জাপানি"},
-{"text":"জামদানি","language":"ফারসি"}
-  ]
-};
-
-// localStorage এ প্রথমবার বসানো
-if(!localStorage.getItem("quizData")){
-  localStorage.setItem("quizData", JSON.stringify(defaultData));
-}
-
-// ---------------- localStorage থেকে লোড -----------------
-let quizData = JSON.parse(localStorage.getItem("quizData"));
-let words = quizData.words;
-let originWords = quizData.originWords;
-
-const originOptions = ["চিনা","বার্মিজ","হিন্দি","ইংরেজি","আরবি","ফারসি","পর্তুগিজ","ফরাসি","তুর্কি"];
-
+let words = [];
+let originWords = [];
 let allWords = [];
 let currentWordIndex = -1;
 let answered = false;
 
-// Shuffle function
+const originOptions = ["চিনা","বার্মিজ","হিন্দি","ইংরেজি","আরবি","ফারসি","পর্তুগিজ","ফরাসি","তুর্কি"];
+
+async function loadData() {
+  const wordsResp = await fetch('DB1.json');
+  words = await wordsResp.json();
+
+  const originResp = await fetch('DB2.json');
+  originWords = await originResp.json();
+
+  resetAllWords();
+  nextWord();
+}
+
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -295,14 +97,12 @@ function shuffleArray(array) {
   return array;
 }
 
-// --- helper: rebuild & shuffle the word list ---
 function resetAllWords(){
-  allWords = [...quizData.words, ...quizData.originWords];
+  allWords = [...words, ...originWords];
   shuffleArray(allWords);
   currentWordIndex = -1;
 }
 
-// --- improved nextWord ---
 function nextWord() {
   answered = false;
   currentWordIndex++;
@@ -344,7 +144,6 @@ function nextWord() {
   });
 }
 
-// --- improved checkAnswer ---
 function checkAnswer(btnElement) {
   const result = document.getElementById("result");
   const currentWord = allWords[currentWordIndex];
@@ -377,121 +176,18 @@ function checkAnswer(btnElement) {
   document.querySelectorAll(".btn-group-mcq .btn").forEach(b => b.disabled = true);
 }
 
-// ---------- Admin Panel Functions ----------
-function renderWords(){
-  const tbody = document.querySelector("#wordsTable tbody");
-  tbody.innerHTML = "";
-  quizData.words.forEach((w,i)=>{
-    tbody.innerHTML += `<tr>
-      <td>${i+1}</td><td>${w.text}</td><td>${w.type}</td>
-      <td>
-        <button class="btn btn-sm btn-primary" onclick="editWord(${i})">✏️</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteWord(${i})">🗑️</button>
-      </td>`;
-  });
-}
-
-function renderOrigin(){
-  const tbody = document.querySelector("#originTable tbody");
-  tbody.innerHTML = "";
-  quizData.originWords.forEach((o,i)=>{
-    tbody.innerHTML += `<tr>
-      <td>${i+1}</td><td>${o.text}</td><td>${o.language}</td>
-      <td>
-        <button class="btn btn-sm btn-primary" onclick="editOrigin(${i})">✏️</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteOrigin(${i})">🗑️</button>
-      </td>`;
-  });
-}
-
-function addWord(){
-  const text = document.getElementById("wordText").value.trim();
-  const type = document.getElementById("wordType").value;
-  if(!text) return alert("শব্দ দিন!");
-  quizData.words.push({text, type});
-  saveData(); renderWords(); updateJsonView('words');
-  document.getElementById("wordText").value="";
-}
-
-function editWord(i){
-  const newText = prompt("শব্দ পরিবর্তন করুন:", quizData.words[i].text);
-  if(newText===null) return;
-  const newType = prompt("ধরন পরিবর্তন করুন:", quizData.words[i].type);
-  if(newType===null) return;
-  quizData.words[i] = { text:newText.trim(), type:newType.trim() };
-  saveData(); renderWords(); updateJsonView('words');
-}
-
-function deleteWord(i){
-  if(confirm("ডিলিট করতে চান?")){
-    quizData.words.splice(i,1);
-    saveData(); renderWords(); updateJsonView('words');
-  }
-}
-
-function addOrigin(){
-  const text = document.getElementById("originText").value.trim();
-  const language = document.getElementById("originLang").value.trim();
-  if(!text || !language) return alert("শব্দ ও ভাষা দিন!");
-  quizData.originWords.push({text, language});
-  saveData(); renderOrigin(); updateJsonView('origin');
-  document.getElementById("originText").value="";
-  document.getElementById("originLang").value="";
-}
-
-function editOrigin(i){
-  const newText = prompt("শব্দ পরিবর্তন করুন:", quizData.originWords[i].text);
-  if(newText===null) return;
-  const newLang = prompt("ভাষা পরিবর্তন করুন:", quizData.originWords[i].language);
-  if(newLang===null) return;
-  quizData.originWords[i] = { text:newText.trim(), language:newLang.trim() };
-  saveData(); renderOrigin(); updateJsonView('origin');
-}
-
-function deleteOrigin(i){
-  if(confirm("ডিলিট করতে চান?")){
-    quizData.originWords.splice(i,1);
-    saveData(); renderOrigin(); updateJsonView('origin');
-  }
-}
-
-function resetData(){
-  if(confirm("ডিফল্ট ডাটায় ফিরে যেতে চান?")){
-    quizData = JSON.parse(JSON.stringify(defaultData));
-    saveData(); renderWords(); renderOrigin(); updateJsonView('words'); updateJsonView('origin');
-  }
-}
-
-function saveData(){
-  localStorage.setItem("quizData", JSON.stringify(quizData));
-  words = quizData.words;
-  originWords = quizData.originWords;
-  resetAllWords();
-}
-
 function toggleJson(type){
   if(type==='words'){
     const box = document.getElementById("jsonBoxWords");
     box.style.display = box.style.display==='none'?'block':'none';
-    updateJsonView('words');
+    document.getElementById("jsonViewWords").value = JSON.stringify(words, null, 2);
   } else {
     const box = document.getElementById("jsonBoxOrigin");
     box.style.display = box.style.display==='none'?'block':'none';
-    updateJsonView('origin');
+    document.getElementById("jsonViewOrigin").value = JSON.stringify(originWords, null, 2);
   }
 }
 
-function updateJsonView(type){
-  const arr = type==='words'? quizData.words : quizData.originWords;
-  const lines = arr.map(o => JSON.stringify(o));
-  if(type==='words'){
-    document.getElementById("jsonViewWords").value = lines.join(",\n");
-  } else {
-    document.getElementById("jsonViewOrigin").value = lines.join(",\n");
-  }
-}
-
-// ---------- Section Toggle ----------
 function showQuiz(){
   document.getElementById("quizSection").style.display="block";
   document.getElementById("adminPanel").style.display="none";
@@ -503,13 +199,7 @@ function showAdmin(){
 }
 
 // --- init ---
-window.onload = ()=>{
-  renderWords();
-  renderOrigin();
-  resetAllWords();
-  showQuiz();
-  nextWord();
-};
+window.onload = loadData;
 </script>
 </body>
 </html>
