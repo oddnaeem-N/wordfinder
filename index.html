@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Word Finder</title>
+<title>শব্দ কুইজ + অ্যাডমিন</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body { font-family: "Noto Sans Bengali", sans-serif; background: #f8f9fa; }
@@ -58,7 +58,7 @@ textarea { font-family: monospace; }
     <h3>Words </h3>
     <table class="table table-bordered table-striped" id="wordsTable">
       <thead class="table-dark">
-        <tr><th>#</th><th>শব্দ</th><th>ধরন</th><th>Correct</th><th>Wrong</th><th>Weight</th><th>অ্যাকশন</th></tr>
+        <tr><th>#</th><th>শব্দ</th><th>ধরন</th><th>অ্যাকশন</th></tr>
       </thead><tbody></tbody>
     </table>
     <div class="row g-2 mb-3">
@@ -80,7 +80,7 @@ textarea { font-family: monospace; }
     <h3>Origin Words</h3>
     <table class="table table-bordered table-striped" id="originTable">
       <thead class="table-dark">
-        <tr><th>#</th><th>শব্দ</th><th>ভাষা</th><th>Correct</th><th>Wrong</th><th>Weight</th><th>অ্যাকশন</th></tr>
+        <tr><th>#</th><th>শব্দ</th><th>ভাষা</th><th>অ্যাকশন</th></tr>
       </thead><tbody></tbody>
     </table>
     <div class="row g-2 mb-3">
@@ -183,7 +183,7 @@ const defaultData = {
 {"text":"চাল","type":"দেশি"}
   ],
   originWords: [
-    {"text":"কানুন","language":"আরবি"},
+   {"text":"কানুন","language":"আরবি"},
 {"text":"কলম","language":"আরবি"},
 {"text":"কিতাব","language":"আরবি"},
 {"text":"কেচ্ছা","language":"আরবি"},
@@ -281,121 +281,109 @@ let words = quizData.words;
 let originWords = quizData.originWords;
 
 const originOptions = ["চিনা","বার্মিজ","হিন্দি","ইংরেজি","আরবি","ফারসি","পর্তুগিজ","ফরাসি","তুর্কি"];
+
 let allWords = [];
 let currentWordIndex = -1;
 let answered = false;
 
-// Initialize weight properties
-function initWeights() {
-  [...quizData.words, ...quizData.originWords].forEach(w=>{
-    if(w.correctCount===undefined) w.correctCount=0;
-    if(w.wrongCount===undefined) w.wrongCount=0;
-    if(w.weight===undefined) w.weight=1;
-  });
-}
-
 // Shuffle function
-function shuffleArray(array){
-  for(let i=array.length-1;i>0;i--){
-    const j=Math.floor(Math.random()* (i+1));
-    [array[i],array[j]]=[array[j],array[i]];
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
   return array;
 }
 
-// Weighted random selection
-function getWeightedRandomWord(){
-  const pool = [...quizData.words,...quizData.originWords].filter(w=>w.weight>0);
-  const totalWeight = pool.reduce((sum,w)=>sum+w.weight,0);
-  let r = Math.random()*totalWeight;
-  for(let w of pool){
-    if(r<w.weight) return w;
-    r-=w.weight;
-  }
-  return pool[0];
+// --- helper: rebuild & shuffle the word list ---
+function resetAllWords(){
+  allWords = [...quizData.words, ...quizData.originWords];
+  shuffleArray(allWords);
+  currentWordIndex = -1;
 }
 
-// --- nextWord ---
+// --- improved nextWord ---
 function nextWord() {
-  answered=false;
-  const currentWord = getWeightedRandomWord();
-  currentWordIndex = [...quizData.words,...quizData.originWords].indexOf(currentWord);
-  document.getElementById("word").innerText=currentWord.text || "";
-
-  const resultEl=document.getElementById("result");
-  resultEl.innerText="";
-  resultEl.style.color="";
-
-  const btns=document.querySelectorAll(".btn-group-mcq .btn");
-  btns.forEach(b=>{
-    b.disabled=false;
-    delete b.dataset.type;
-    b.classList.remove("correct","wrong");
-  });
-
-  let options=[];
-  let correctIndex=Math.floor(Math.random()*4);
-
-  if(currentWord.language){
-    const other = originOptions.filter(l=>l!==currentWord.language);
-    options=shuffleArray(other).slice(0,3);
-    options.splice(correctIndex,0,currentWord.language);
-  } else {
-    const types = ["তৎসম","তদ্ভব","অর্ধ-তৎসম","দেশি"];
-    const other = types.filter(t=>t!==currentWord.type);
-    options=shuffleArray(other).slice(0,3);
-    options.splice(correctIndex,0,currentWord.type);
+  answered = false;
+  currentWordIndex++;
+  if (currentWordIndex >= allWords.length) {
+    alert("সব শব্দ শেষ!");
+    return;
   }
 
-  btns.forEach((btn,i)=>{
-    btn.dataset.type=options[i];
-    btn.innerText=String.fromCharCode(65+i)+". "+options[i];
+  const currentWord = allWords[currentWordIndex];
+  document.getElementById("word").innerText = currentWord.text || "";
+  const resultEl = document.getElementById("result");
+  resultEl.innerText = "";
+  resultEl.style.color = "";
+
+  const btns = document.querySelectorAll(".btn-group-mcq .btn");
+  btns.forEach(b => {
+    b.disabled = false;
+    delete b.dataset.type;
+    b.classList.remove("correct", "wrong");
+  });
+
+  let options = [];
+  let correctIndex = Math.floor(Math.random() * 4);
+
+  if (currentWord.hasOwnProperty('language') && currentWord.language) {
+    const other = originOptions.filter(l => l !== currentWord.language);
+    options = shuffleArray(other).slice(0, 3);
+    options.splice(correctIndex, 0, currentWord.language);
+  } else {
+    const types = ["তৎসম", "তদ্ভব", "অর্ধ-তৎসম", "দেশি"];
+    const other = types.filter(t => t !== currentWord.type);
+    options = shuffleArray(other).slice(0, 3);
+    options.splice(correctIndex, 0, currentWord.type);
+  }
+
+  btns.forEach((btn, i) => {
+    btn.dataset.type = options[i];
+    btn.innerText = String.fromCharCode(65 + i) + ". " + options[i];
   });
 }
 
-// --- checkAnswer ---
-function checkAnswer(btnElement){
-  const result=document.getElementById("result");
-  const currentWord=[...quizData.words,...quizData.originWords][currentWordIndex];
-  if(!currentWord){
-    result.textContent="কোনো শব্দ পাওয়া যায়নি।";
-    return;
-  }
-  if(answered){
-    result.innerText="⚠️ একাধিক উত্তর গ্রহণযোগ্য নয়";
-    result.style.color="orange";
+// --- improved checkAnswer ---
+function checkAnswer(btnElement) {
+  const result = document.getElementById("result");
+  const currentWord = allWords[currentWordIndex];
+
+  if (!currentWord) {
+    result.textContent = "কোনো শব্দ পাওয়া যায়নি।";
     return;
   }
 
-  const selectedType=(btnElement.dataset.type||"").trim();
-  const correctAnswer=((currentWord.type&&currentWord.type.trim())||(currentWord.language&&currentWord.language.trim())||"").trim();
-  answered=true;
+  if (answered) {
+    result.innerText = "⚠️ একাধিক উত্তর গ্রহণযোগ্য নয়";
+    result.style.color = "orange";
+    return;
+  }
 
-  if(selectedType===correctAnswer){
-    result.innerHTML=`✅ <span style="color:green">সঠিক: ${correctAnswer}</span>`;
+  const selectedType = (btnElement.dataset.type || "").trim();
+  const correctAnswer = ((currentWord.type && currentWord.type.trim()) ||
+                         (currentWord.language && currentWord.language.trim()) || "").trim();
+
+  answered = true;
+
+  if (selectedType === correctAnswer) {
+    result.innerHTML = `✅ <span style="color:green">সঠিক: ${correctAnswer}</span>`;
     btnElement.classList.add("correct");
-    currentWord.correctCount++;
   } else {
-    result.innerHTML=`❌ ভুল! <span style="color:green">সঠিক: ${correctAnswer}</span>`;
+    result.innerHTML = `❌ ভুল! <span style="color:green">সঠিক: ${correctAnswer}</span>`;
     btnElement.classList.add("wrong");
-    currentWord.wrongCount++;
   }
 
-  // Update weight
-  currentWord.weight = Math.max(0, 10 + currentWord.wrongCount - currentWord.correctCount);
-  if(currentWord.correctCount>=100) currentWord.weight=0;
-
-  document.querySelectorAll(".btn-group-mcq .btn").forEach(b=>b.disabled=true);
-  saveData();
+  document.querySelectorAll(".btn-group-mcq .btn").forEach(b => b.disabled = true);
 }
 
 // ---------- Admin Panel Functions ----------
 function renderWords(){
-  const tbody=document.querySelector("#wordsTable tbody");
-  tbody.innerHTML="";
+  const tbody = document.querySelector("#wordsTable tbody");
+  tbody.innerHTML = "";
   quizData.words.forEach((w,i)=>{
-    tbody.innerHTML+=`<tr>
-      <td>${i+1}</td><td>${w.text}</td><td>${w.type}</td><td>${w.correctCount}</td><td>${w.wrongCount}</td><td>${w.weight}</td>
+    tbody.innerHTML += `<tr>
+      <td>${i+1}</td><td>${w.text}</td><td>${w.type}</td>
       <td>
         <button class="btn btn-sm btn-primary" onclick="editWord(${i})">✏️</button>
         <button class="btn btn-sm btn-danger" onclick="deleteWord(${i})">🗑️</button>
@@ -404,11 +392,11 @@ function renderWords(){
 }
 
 function renderOrigin(){
-  const tbody=document.querySelector("#originTable tbody");
-  tbody.innerHTML="";
+  const tbody = document.querySelector("#originTable tbody");
+  tbody.innerHTML = "";
   quizData.originWords.forEach((o,i)=>{
-    tbody.innerHTML+=`<tr>
-      <td>${i+1}</td><td>${o.text}</td><td>${o.language}</td><td>${o.correctCount}</td><td>${o.wrongCount}</td><td>${o.weight}</td>
+    tbody.innerHTML += `<tr>
+      <td>${i+1}</td><td>${o.text}</td><td>${o.language}</td>
       <td>
         <button class="btn btn-sm btn-primary" onclick="editOrigin(${i})">✏️</button>
         <button class="btn btn-sm btn-danger" onclick="deleteOrigin(${i})">🗑️</button>
@@ -417,20 +405,20 @@ function renderOrigin(){
 }
 
 function addWord(){
-  const text=document.getElementById("wordText").value.trim();
-  const type=document.getElementById("wordType").value;
+  const text = document.getElementById("wordText").value.trim();
+  const type = document.getElementById("wordType").value;
   if(!text) return alert("শব্দ দিন!");
-  quizData.words.push({text,type,correctCount:0,wrongCount:0,weight:1});
+  quizData.words.push({text, type});
   saveData(); renderWords(); updateJsonView('words');
   document.getElementById("wordText").value="";
 }
 
 function editWord(i){
-  const newText=prompt("শব্দ পরিবর্তন করুন:",quizData.words[i].text);
+  const newText = prompt("শব্দ পরিবর্তন করুন:", quizData.words[i].text);
   if(newText===null) return;
-  const newType=prompt("ধরন পরিবর্তন করুন:",quizData.words[i].type);
+  const newType = prompt("ধরন পরিবর্তন করুন:", quizData.words[i].type);
   if(newType===null) return;
-  quizData.words[i]={ text:newText.trim(), type:newType.trim(), correctCount:quizData.words[i].correctCount, wrongCount:quizData.words[i].wrongCount, weight:quizData.words[i].weight };
+  quizData.words[i] = { text:newText.trim(), type:newType.trim() };
   saveData(); renderWords(); updateJsonView('words');
 }
 
@@ -442,20 +430,21 @@ function deleteWord(i){
 }
 
 function addOrigin(){
-  const text=document.getElementById("originText").value.trim();
-  const language=document.getElementById("originLang").value.trim();
+  const text = document.getElementById("originText").value.trim();
+  const language = document.getElementById("originLang").value.trim();
   if(!text || !language) return alert("শব্দ ও ভাষা দিন!");
-  quizData.originWords.push({text,language,correctCount:0,wrongCount:0,weight:1});
+  quizData.originWords.push({text, language});
   saveData(); renderOrigin(); updateJsonView('origin');
-  document.getElementById("originText").value=""; document.getElementById("originLang").value="";
+  document.getElementById("originText").value="";
+  document.getElementById("originLang").value="";
 }
 
 function editOrigin(i){
-  const newText=prompt("শব্দ পরিবর্তন করুন:",quizData.originWords[i].text);
+  const newText = prompt("শব্দ পরিবর্তন করুন:", quizData.originWords[i].text);
   if(newText===null) return;
-  const newLang=prompt("ভাষা পরিবর্তন করুন:",quizData.originWords[i].language);
+  const newLang = prompt("ভাষা পরিবর্তন করুন:", quizData.originWords[i].language);
   if(newLang===null) return;
-  quizData.originWords[i]={ text:newText.trim(), language:newLang.trim(), correctCount:quizData.originWords[i].correctCount, wrongCount:quizData.originWords[i].wrongCount, weight:quizData.originWords[i].weight };
+  quizData.originWords[i] = { text:newText.trim(), language:newLang.trim() };
   saveData(); renderOrigin(); updateJsonView('origin');
 }
 
@@ -468,31 +457,33 @@ function deleteOrigin(i){
 
 function resetData(){
   if(confirm("ডিফল্ট ডাটায় ফিরে যেতে চান?")){
-    quizData=JSON.parse(JSON.stringify(defaultData));
-    initWeights(); saveData(); renderWords(); renderOrigin(); updateJsonView('words'); updateJsonView('origin');
+    quizData = JSON.parse(JSON.stringify(defaultData));
+    saveData(); renderWords(); renderOrigin(); updateJsonView('words'); updateJsonView('origin');
   }
 }
 
 function saveData(){
-  localStorage.setItem("quizData",JSON.stringify(quizData));
-  words=quizData.words; originWords=quizData.originWords;
+  localStorage.setItem("quizData", JSON.stringify(quizData));
+  words = quizData.words;
+  originWords = quizData.originWords;
+  resetAllWords();
 }
 
 function toggleJson(type){
   if(type==='words'){
-    const box=document.getElementById("jsonBoxWords");
-    box.style.display=box.style.display==='none'?'block':'none';
+    const box = document.getElementById("jsonBoxWords");
+    box.style.display = box.style.display==='none'?'block':'none';
     updateJsonView('words');
   } else {
-    const box=document.getElementById("jsonBoxOrigin");
-    box.style.display=box.style.display==='none'?'block':'none';
+    const box = document.getElementById("jsonBoxOrigin");
+    box.style.display = box.style.display==='none'?'block':'none';
     updateJsonView('origin');
   }
 }
 
 function updateJsonView(type){
   const arr = type==='words'? quizData.words : quizData.originWords;
-  const lines = arr.map(o=>JSON.stringify(o));
+  const lines = arr.map(o => JSON.stringify(o));
   if(type==='words'){
     document.getElementById("jsonViewWords").value = lines.join(",\n");
   } else {
@@ -505,6 +496,7 @@ function showQuiz(){
   document.getElementById("quizSection").style.display="block";
   document.getElementById("adminPanel").style.display="none";
 }
+
 function showAdmin(){
   document.getElementById("quizSection").style.display="none";
   document.getElementById("adminPanel").style.display="block";
@@ -512,9 +504,10 @@ function showAdmin(){
 
 // --- init ---
 window.onload = ()=>{
-  initWeights();
   renderWords();
   renderOrigin();
+  resetAllWords();
+  showQuiz();
   nextWord();
 };
 </script>
